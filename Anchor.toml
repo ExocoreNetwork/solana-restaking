@@ -5,9 +5,8 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-lst-restaking = "4ejcBdrPJUQ485bTxVfNQH42zTdN4i6gpyxPAGQkyfg9"
-native-restaking = "2FP3X2ky9aDf9F9WXbrz76vcC7PgTAUDFqkwrkiZuJNB"
-solana_restaking = "FDNc8vxUQ695kg1dUfPTuPHzwwWyrS6DBvdtj9F3y6yV"
+lst-restaking = "68av2QdR1k1QeaxsJwjiB16QHXDhTuaS14tyTNM3MgHX"
+native-restaking = "AtfUbXniQddbR3DVetG2xJz7Hnyg8geNECRrDdnLsYZ5"
 
 [registry]
 url = "https://api.apr.dev"
