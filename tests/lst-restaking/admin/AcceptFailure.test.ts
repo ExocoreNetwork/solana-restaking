@@ -2,7 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { LstRestaking } from "../../../target/types/lst_restaking";
 import {getConfig, testKeys} from "../../utils";
-import {assert} from "chai";
+import {assert, expect} from "chai";
 
 describe("solana-restaking", () => {
     // Configure the client to use the local cluster.
@@ -25,14 +25,21 @@ describe("solana-restaking", () => {
         const [owner, newOwner] = await testKeys();
         const [config] = await getConfig();
 
-        const tx = await program.methods.accept()
-            .accounts({
-                newOwner: newOwner.publicKey,
-                config
-            })
-            .signers([owner])
-            .rpc();
-        console.log("Your transaction signature", tx);
+        try {
+            const tx = await program.methods.accept()
+                .accounts({
+                    newOwner: owner.publicKey,
+                    config
+                })
+                .signers([owner])
+                .rpc();
+            console.log("Your transaction signature", tx);
+
+            expect.fail("The transaction should be fail but successful");
+        } catch(err) {
+            expect(err.error.errorCode.number).to.equal(6004);
+            expect(err.error.errorMessage).to.equal("Invalid new owner");
+        }
 
     });
 });

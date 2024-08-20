@@ -1,8 +1,8 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
-import { LstRestaking } from "../../../target/types/lst_restaking";
+import {Program} from "@coral-xyz/anchor";
+import {LstRestaking} from "../../../target/types/lst_restaking";
 import {getConfig, testKeys} from "../../utils";
-import {assert} from "chai";
+import {expect} from "chai";
 
 describe("solana-restaking", () => {
     // Configure the client to use the local cluster.
@@ -25,15 +25,22 @@ describe("solana-restaking", () => {
         const [owner, newOwner, user] = await testKeys();
         const [config] = await getConfig();
 
-        const tx = await program.methods.transferOwnership()
-            .accounts({
-                owner: owner.publicKey,
-                newOwner: newOwner.publicKey,
-                config
-            })
-            .signers([user])
-            .rpc();
+        try {
+            const tx = await program.methods.transferOwnership()
+                .accounts({
+                    owner: user.publicKey,
+                    newOwner: newOwner.publicKey,
+                    config
+                })
+                .signers([user])
+                .rpc();
 
-        console.log("Your transaction signature", tx);
+            console.log("Your transaction signature", tx);
+            expect.fail("Transaction should be fail but success");
+        } catch (err) {
+            expect(err.error.errorCode.number).to.equal(6000);
+
+            expect(err.error.errorMessage).to.equal("Invalid owner");
+        }
     });
 });

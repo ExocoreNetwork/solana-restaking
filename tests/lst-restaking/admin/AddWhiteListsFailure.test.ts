@@ -2,6 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { LstRestaking } from "../../../target/types/lst_restaking";
 import {createMint, getConfig, testKeys, TestMint} from "../../utils";
+import {expect} from "chai";
 
 describe("solana-restaking", () => {
     // Configure the client to use the local cluster.
@@ -24,14 +25,22 @@ describe("solana-restaking", () => {
         const [owner] = await testKeys();
         const [config] = await getConfig();
 
-        const tx = await program.methods.updateWhiteLists({add: {}})
-            .accounts({
-                owner: owner.publicKey,
-                config,
-                mint: TestMint
-            })
-            .signers([owner])
-            .rpc();
-        console.log("Your transaction signature", tx);
+        try {
+            const tx = await program.methods.updateWhiteLists({add: {}})
+                .accounts({
+                    owner: owner.publicKey,
+                    config,
+                    mint: TestMint
+                })
+                .signers([owner])
+                .rpc();
+            console.log("Your transaction signature", tx);
+
+            expect.fail("Transaction should be fail but success");
+        } catch (err) {
+            expect(err.error.errorCode.number).to.equal(6002);
+
+            expect(err.error.errorMessage).to.equal("Mint is already exists");
+        }
     });
 });
