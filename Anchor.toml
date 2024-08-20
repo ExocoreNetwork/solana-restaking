@@ -17,3 +17,8 @@ wallet = "/Users/scarecrow/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+initialize = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/Initialize.test.ts"
+addToken = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/AddWhiteLists.test.ts"
+addTokenAgain = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/AddWhiteListsFailure.test.ts"
+removeToken = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/RemoveWhiteLists.test.ts"
+removeTokenAgain = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/RemoveWhiteListsFailure.test.ts"

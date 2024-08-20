@@ -20,8 +20,8 @@ pub mod lst_restaking {
         instructions::transfer_ownership(ctx)
     }
 
-    pub fn update_white_lists(ctx: Context<UpdateWhiteList>) -> Result<()> {
-        instructions::update_white_lists(ctx)
+    pub fn update_white_lists(ctx: Context<UpdateWhiteList>, action: Action) -> Result<()> {
+        instructions::update_white_lists(ctx, action)
     }
 
     pub fn accept(ctx: Context<Accept>) -> Result<()> {

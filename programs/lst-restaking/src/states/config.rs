@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 pub struct Config {
     pub owner: Pubkey,
     pub pending_owner: Pubkey,
-    pub white_lists_token: Vec<Pubkey>,
+    pub white_list_tokens: Vec<Pubkey>,
     pub _padding: Vec<u8>,
 }
 

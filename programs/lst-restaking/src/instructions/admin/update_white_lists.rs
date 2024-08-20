@@ -1,11 +1,9 @@
-use std::any::Any;
-
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenInterface};
 
 use crate::{errors::LstRestakingError, states::Config};
 
-pub fn update_white_lists(ctx: Context<UpdateWhiteList>) -> Result<()> {
+pub fn update_white_lists(ctx: Context<UpdateWhiteList>, action: Action) -> Result<()> {
     let mint_owner = ctx.accounts.mint.to_account_info().owner;
     let token_program_id = ctx.accounts.token_program.key();
     require_keys_eq!(
@@ -18,13 +16,22 @@ pub fn update_white_lists(ctx: Context<UpdateWhiteList>) -> Result<()> {
 
     let mint = ctx.accounts.mint.key();
 
-    if config.white_lists_token.iter().any(|m| m.eq(&mint)) {
+    if config.white_list_tokens.iter().any(|m| m.eq(&mint)) {
         return Err(LstRestakingError::MintAlreadyExists.into());
     }
 
-    config.white_lists_token.push(mint);
+    match action {
+        Action::Add => {
+            require!(!config.white_list_tokens.iter().any(|m| m.eq(&mint)), LstRestakingError::MintAlreadyExists);
+            config.white_list_tokens.push(mint);
+        },
+        Action::Remove => {
+            require!(config.white_list_tokens.iter().any(|m| m.eq(&mint)), LstRestakingError::MintNotExists);
+            config.white_list_tokens.push(mint);
+        }
+    }
 
-    msg!("Successful to update white lists, token: {}");
+    msg!("Successful to update white lists, token: {mint}");
     Ok(())
 }
 
@@ -36,4 +43,10 @@ pub struct UpdateWhiteList<'info> {
     config: Account<'info, Config>,
     mint: Box<InterfaceAccount<'info, Mint>>,
     token_program: Interface<'info, TokenInterface>,
+}
+
+#[derive(AnchorDeserialize, AnchorSerialize)]
+pub enum Action {
+    Add,
+    Remove
 }

@@ -8,6 +8,8 @@ pub enum LstRestakingError {
     InvalidMintOwner,
     #[msg("Mint is already exists")]
     MintAlreadyExists,
+    #[msg("Mint is not exists")]
+    MintNotExists,
     #[msg("Invalid new owner")]
     InvalidNewOwner,
 }
