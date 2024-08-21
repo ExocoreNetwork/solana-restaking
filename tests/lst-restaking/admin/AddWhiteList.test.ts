@@ -1,8 +1,9 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { LstRestaking } from "../../../target/types/lst_restaking";
-import {createMint, getConfig, testKeys, TestMint} from "../../utils";
+import {getConfig, testKeys, createMint} from "../../utils";
 import {assert} from "chai";
+import * as fs from "node:fs";
 
 describe("solana-restaking", () => {
   // Configure the client to use the local cluster.
@@ -22,17 +23,18 @@ describe("solana-restaking", () => {
 
   const program = anchor.workspace.LstRestaking as Program<LstRestaking>;
 
-  it("Add token into white lists!", async () => {
+  it("Add token into white list!", async () => {
       const [owner] = await testKeys();
       const [config] = await getConfig();
 
-      await createMint(program, owner);
+      const mint = await createMint(program, owner);
+      fs.writeFileSync(".env", `MINT_ADDRESS=${mint.toBase58()}`);
 
-      const tx = await program.methods.updateWhiteLists({add: {}})
+      const tx = await program.methods.updateWhiteList({add: {}})
         .accounts({
             owner: owner.publicKey,
             config,
-            mint: TestMint
+            mint,
         })
         .signers([owner])
         .rpc();
@@ -42,6 +44,8 @@ describe("solana-restaking", () => {
 
       assert.equal(configState.whiteListTokens.length, 1, "Add Token into white list failed");
 
-      assert.equal(configState.whiteListTokens.at(0).toString(), TestMint.toString(), "Add Token into white list failed");
+      assert.equal(configState.whiteListTokens.at(0).mint.toString(), mint.toString(), "Add Token into white list failed");
+
+      assert.equal(configState.whiteListTokens.at(0).active, true, "Add Token into white list failed");
   });
 });

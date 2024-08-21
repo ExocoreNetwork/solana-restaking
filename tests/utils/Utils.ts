@@ -8,8 +8,6 @@ import {
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { LstRestaking } from "../../target/types/lst_restaking";
 
-export let TestMint: PublicKey;
-
 // airdrop
 export const airdrop = async (conn: Connection, user: PublicKey) => {
   const signature = await conn.requestAirdrop(user, LAMPORTS_PER_SOL);
@@ -24,7 +22,6 @@ export const createMint = async (
   decimals: number = 9
 ) => {
   const mint = anchor.web3.Keypair.generate();
-
   const tx = new web3.Transaction().add(
     web3.SystemProgram.createAccount({
       fromPubkey: payer.publicKey,
@@ -45,9 +42,7 @@ export const createMint = async (
 
   await program.provider.sendAndConfirm(tx, [payer, mint]);
 
-  TestMint = mint.publicKey;
-
-  console.log(`created new mint: ${TestMint}`);
+  console.log(`created new mint: ${mint.publicKey}`);
 
   return mint.publicKey;
 };

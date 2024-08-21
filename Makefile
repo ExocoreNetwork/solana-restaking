@@ -35,8 +35,20 @@ addToken:
 addTokenAgain:
 	anchor run addTokenAgain
 
-removeToken:
-	anchor run removeToken
+deactivateToken:
+	anchor run deactivateToken
 
-removeTokenAgain:
-	anchor run removeTokenAgain
+deactivateTokenAgain:
+	anchor run deactivateTokenAgain
+
+transferOwnership:
+	anchor run transferOwnership
+
+transferOwnershipFailure:
+	anchor run transferOwnershipFailure
+
+accept:
+	anchor run accept
+
+acceptFailure:
+	anchor run acceptFailure

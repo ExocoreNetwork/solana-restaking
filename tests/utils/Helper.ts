@@ -6,7 +6,7 @@ export const writeKeypairToFile = async (
   sk: Uint8Array,
   fileName: string
 ): Promise<void> => {
-  const filePath = path.join(".env/", `${fileName}.json`);
+  const filePath = path.join(".keys/", `${fileName}.json`);
 
   try {
     await fs.writeFile(filePath, JSON.stringify(Array.from(sk)));
@@ -19,7 +19,7 @@ export const writeKeypairToFile = async (
 export const readKeypairToFile = async (
   fileName: string
 ): Promise<anchor.web3.Keypair | undefined> => {
-  const filePath = path.join(".env/", `${fileName}.json`);
+  const filePath = path.join(".keys/", `${fileName}.json`);
 
   try {
     const raw = await fs.readFile(filePath);

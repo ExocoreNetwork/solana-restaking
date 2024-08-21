@@ -17,8 +17,16 @@ wallet = "/Users/scarecrow/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+
 initialize = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/Initialize.test.ts"
-addToken = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/AddWhiteLists.test.ts"
-addTokenAgain = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/AddWhiteListsFailure.test.ts"
-removeToken = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/RemoveWhiteLists.test.ts"
-removeTokenAgain = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/RemoveWhiteListsFailure.test.ts"
+
+addToken = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/AddWhiteList.test.ts"
+addTokenAgain = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/AddWhiteListFailure.test.ts"
+deactivateToken = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/DeactivateWhiteList.test.ts"
+deactivateNotInWhiteListToken= "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/DeactivateWhiteListFailure.test.ts"
+
+transferOwnership = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/TransferOwnership.test.ts"
+transferOwnershipFailure = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/TransferOwnershipFailure.test.ts"
+
+accept = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/Accept.test.ts"
+acceptFailure = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/AcceptFailure.test.ts"

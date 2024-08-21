@@ -1,8 +1,11 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
+import {Program, web3} from "@coral-xyz/anchor";
 import { LstRestaking } from "../../../target/types/lst_restaking";
-import {createMint, getConfig, testKeys, TestMint} from "../../utils";
+import {getConfig, testKeys} from "../../utils";
 import {expect} from "chai";
+import {config} from "dotenv";
+
+config();
 
 describe("solana-restaking", () => {
     // Configure the client to use the local cluster.
@@ -21,23 +24,34 @@ describe("solana-restaking", () => {
     anchor.setProvider(customProvider);
 
     const program = anchor.workspace.LstRestaking as Program<LstRestaking>;
-    it("Add token which is already exists in white lists!", async () => {
+    it("Add token which is already exists in white list!", async () => {
         const [owner] = await testKeys();
         const [config] = await getConfig();
 
+        const mint = new web3.PublicKey(process.env.MINT_ADDRESS);
+
+        if (!mint)
+        {
+            console.log(`mint should not be empty`);
+            return;
+        }
+
         try {
-            const tx = await program.methods.updateWhiteLists({add: {}})
+            await program.methods.updateWhiteList({add: {}})
                 .accounts({
                     owner: owner.publicKey,
                     config,
-                    mint: TestMint
+                    mint,
                 })
                 .signers([owner])
                 .rpc();
-            console.log("Your transaction signature", tx);
 
-            expect.fail("Transaction should be fail but success");
+            expect.fail("Transaction should fail but success");
         } catch (err) {
+            // console.log(err);
+
+            expect(err.error.errorCode.code).to.equal('MintAlreadyExists');
+
             expect(err.error.errorCode.number).to.equal(6002);
 
             expect(err.error.errorMessage).to.equal("Mint is already exists");

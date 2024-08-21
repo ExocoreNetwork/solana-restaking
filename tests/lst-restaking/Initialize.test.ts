@@ -3,6 +3,7 @@ import {Program} from "@coral-xyz/anchor";
 import {LstRestaking} from "../../target/types/lst_restaking";
 import {airdrop, getConfig, testKeys} from "../utils";
 import {assert} from "chai";
+import BN from "bn.js";
 
 describe("solana-restaking", () => {
     // Configure the client to use the local cluster.
@@ -42,5 +43,6 @@ describe("solana-restaking", () => {
         const configState = await program.account.config.fetch(config);
 
         assert.equal(configState.owner.toString(), owner.publicKey.toString(), "Initialize is failed");
+        assert.isTrue(configState.nonce.eq(new BN(0)), "Initialize is failed");
     });
 });

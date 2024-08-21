@@ -7,9 +7,11 @@ mod states;
 declare_id!("68av2QdR1k1QeaxsJwjiB16QHXDhTuaS14tyTNM3MgHX");
 
 use instructions::*;
+use states::*;
 
 #[program]
 pub mod lst_restaking {
+    use crate::states::Action;
     use super::*;
 
     pub fn initialize(ctx: Context<InitConfig>) -> Result<()> {
@@ -20,8 +22,8 @@ pub mod lst_restaking {
         instructions::transfer_ownership(ctx)
     }
 
-    pub fn update_white_lists(ctx: Context<UpdateWhiteList>, action: Action) -> Result<()> {
-        instructions::update_white_lists(ctx, action)
+    pub fn update_white_list(ctx: Context<UpdateWhiteList>, action: Action) -> Result<()> {
+        instructions::update_white_list(ctx, action)
     }
 
     pub fn accept(ctx: Context<Accept>) -> Result<()> {

@@ -1,8 +1,9 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { LstRestaking } from "../../../target/types/lst_restaking";
-import {createMint, getConfig, testKeys, TestMint} from "../../utils";
+import {createMint, getConfig, testKeys} from "../../utils";
 import {expect} from "chai";
+import {PublicKey} from "@solana/web3.js";
 
 describe("solana-restaking", () => {
     // Configure the client to use the local cluster.
@@ -24,17 +25,19 @@ describe("solana-restaking", () => {
     it("Remove token which is not in white list!", async () => {
         const [owner] = await testKeys();
         const [config] = await getConfig();
+
+        const mint = await createMint(program, owner);
+
         try {
-            const tx = await program.methods.updateWhiteLists({add: {}})
+            await program.methods.updateWhiteList({deactivate: {}})
                 .accounts({
                     owner: owner.publicKey,
                     config,
-                    mint: TestMint
+                    mint,
                 })
                 .signers([owner])
                 .rpc();
-            console.log("Your transaction signature", tx);
-            expect.fail("Transaction should be fail but success");
+            expect.fail("Transaction should fail but success");
         } catch (err) {
             expect(err.error.errorCode.number).to.equal(6003);
 

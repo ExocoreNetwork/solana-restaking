@@ -5,6 +5,7 @@ pub fn initialize(ctx: Context<InitConfig>) -> Result<()> {
     let config = &mut ctx.accounts.config;
     config.owner = ctx.accounts.owner.key();
     config.pending_owner = ctx.accounts.owner.key();
+    config.nonce = 0;
 
     msg!("Successful to initialize config");
 
