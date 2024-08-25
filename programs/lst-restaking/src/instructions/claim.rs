@@ -3,25 +3,29 @@ use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface, transfer_c
 use crate::errors::LstRestakingError;
 use crate::states::{Config, Vault, Messages};
 
-pub fn deposit(ctx: Context<Deposit>, amount_in: u64) -> Result<()> {
+pub fn claim(ctx: Context<Claim>, amount_in: u64) -> Result<()> {
     // validate mint
     let config = &mut ctx.accounts.config;
     let mint = &ctx.accounts.mint.key();
+    let claimer= &ctx.accounts.claimer.key();
 
     require!(config.validate_mint(mint)?, LstRestakingError::NotSupportMint);
 
     config.nonce += 1;
 
+    let signer = &[Vault::SEED_PREFIX, mint.key().as_ref(), claimer.as_ref(), &[ctx.bumps.vault]];
+
     // transfer
     transfer_checked(
-        CpiContext::new(
+        CpiContext::new_with_signer(
             ctx.accounts.token_program.to_account_info(),
             TransferChecked {
-                from: ctx.accounts.depositor_token_account.to_account_info(),
+                from: ctx.accounts.pool_token_account.to_account_info(),
+                to: ctx.accounts.claimer_token_account.to_account_info(),
                 mint: ctx.accounts.mint.to_account_info(),
-                to: ctx.accounts.pool_token_account.to_account_info(),
-                authority: ctx.accounts.depositor.to_account_info()
+                authority: ctx.accounts.claimer.to_account_info()
             },
+            &[signer]
         ),
         amount_in,
         ctx.accounts.mint.decimals
@@ -29,7 +33,7 @@ pub fn deposit(ctx: Context<Deposit>, amount_in: u64) -> Result<()> {
 
     // update total balance
     let vault = &mut ctx.accounts.vault;
-    vault.deposit_balance += amount_in;
+    vault.deposit_balance -= amount_in;
 
     // TODO: send message to exocore
 
@@ -37,9 +41,9 @@ pub fn deposit(ctx: Context<Deposit>, amount_in: u64) -> Result<()> {
 }
 
 #[derive(Accounts)]
-pub struct Deposit<'info> {
+pub struct Claim<'info> {
     #[account(mut)]
-    depositor: Signer<'info>,
+    claimer: Signer<'info>,
     #[account(
         mut,
         seeds = [Vault::SEED_PREFIX, mint.key().as_ref(), depositor.key().as_ref()],
@@ -65,7 +69,7 @@ pub struct Deposit<'info> {
         token::mint = mint,
         token::authority = depositor
     )]
-    depositor_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+    claimer_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         mut,
         token::mint = mint,

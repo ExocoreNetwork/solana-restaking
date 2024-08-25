@@ -20,7 +20,7 @@ pub struct InitConfig<'info> {
     #[account(
         init,
         payer = owner,
-        seeds = [Config::SEED_PREFIX],
+        seeds = [Config::CONFIG_SEED_PREFIX],
         bump,
         space = 8 + Config::LEN
     )]

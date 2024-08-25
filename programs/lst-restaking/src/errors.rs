@@ -12,4 +12,6 @@ pub enum LstRestakingError {
     MintNotExists,
     #[msg("Invalid new owner")]
     InvalidNewOwner,
+    #[msg("Not support mint")]
+    NotSupportMint,
 }

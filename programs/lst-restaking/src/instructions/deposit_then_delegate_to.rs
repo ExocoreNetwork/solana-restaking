@@ -3,7 +3,7 @@ use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface, transfer_c
 use crate::errors::LstRestakingError;
 use crate::states::{Config, Vault, Messages};
 
-pub fn deposit(ctx: Context<Deposit>, amount_in: u64) -> Result<()> {
+pub fn deposit_then_delegate_to(ctx: Context<DepositThenDelegateTo>, amount_in: u64) -> Result<()> {
     // validate mint
     let config = &mut ctx.accounts.config;
     let mint = &ctx.accounts.mint.key();
@@ -37,7 +37,7 @@ pub fn deposit(ctx: Context<Deposit>, amount_in: u64) -> Result<()> {
 }
 
 #[derive(Accounts)]
-pub struct Deposit<'info> {
+pub struct DepositThenDelegateTo<'info> {
     #[account(mut)]
     depositor: Signer<'info>,
     #[account(

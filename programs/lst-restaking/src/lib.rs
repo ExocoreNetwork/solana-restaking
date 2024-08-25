@@ -3,6 +3,7 @@ use anchor_lang::prelude::*;
 mod errors;
 mod instructions;
 mod states;
+mod utils;
 
 declare_id!("68av2QdR1k1QeaxsJwjiB16QHXDhTuaS14tyTNM3MgHX");
 
@@ -28,5 +29,9 @@ pub mod lst_restaking {
 
     pub fn accept(ctx: Context<Accept>) -> Result<()> {
         instructions::accept(ctx)
+    }
+
+    pub fn deposit(ctx: Context<Deposit>, amount_in: u64) -> Result<()> {
+        instructions::deposit(ctx, amount_in)
     }
 }

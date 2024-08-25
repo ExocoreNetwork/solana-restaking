@@ -16,14 +16,15 @@ pub struct Token {
     active: bool
 }
 
-#[derive(AnchorDeserialize, AnchorSerialize)]
+#[derive(AnchorDeserialize, AnchorSerialize, Copy, Clone)]
 pub enum Action {
     Add,
     Deactivate
 }
 
 impl Config {
-    pub const SEED_PREFIX: &'static [u8; 6] = b"config";
+    pub const CONFIG_SEED_PREFIX: &'static [u8; 6] = b"config";
+    pub const POOL_SEED_PREFIX: &'static [u8; 4] = b"pool";
 
     //  the count of token when initialize is 10
     pub const LEN: usize = 32 + 32 + 16 + 4 + (32 + 1) * 10 + 4 + 500;
@@ -50,6 +51,10 @@ impl Config {
         }
 
         Ok(())
+    }
+
+    pub fn validate_mint(&self, mint: &Pubkey) -> Result<bool> {
+        Ok(self.white_list_tokens.iter().any(|t| t.mint == *mint && t.active == true))
     }
 }
 
