@@ -5,11 +5,11 @@ import {
   createAssociatedTokenAccountInstruction,
   createInitializeMintInstruction,
 } from "@solana/spl-token";
-import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { LstRestaking } from "../../target/types/lst_restaking";
 
 // airdrop
-export const airdrop = async (conn: Connection, user: PublicKey) => {
+export const airdrop = async (conn: web3.Connection, user: PublicKey) => {
   const signature = await conn.requestAirdrop(user, LAMPORTS_PER_SOL);
   await conn.confirmTransaction(signature, "confirmed");
 

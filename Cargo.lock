@@ -683,6 +683,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f7144d30dcf0fafbce74250a3963025d8d52177934239851c917d29f1df280c2"
 
 [[package]]
+name = "cpi-helper"
+version = "0.1.0"
+source = "git+https://github.com/LayerZero-Labs/LayerZero-v2.git?rev=7aebbd7c79b2dc818f7bb054aed2405ca076b9d6#7aebbd7c79b2dc818f7bb054aed2405ca076b9d6"
+dependencies = [
+ "bs58 0.5.1",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "cpufeatures"
 version = "0.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -877,6 +888,19 @@ name = "either"
 version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "60b1af1c220855b6ceac025d3f6ecdd2b7c4894bfe9cd9bda4fbb4bc7c0d4cf0"
+
+[[package]]
+name = "endpoint"
+version = "0.1.0"
+source = "git+https://github.com/LayerZero-Labs/LayerZero-v2.git?rev=7aebbd7c79b2dc818f7bb054aed2405ca076b9d6#7aebbd7c79b2dc818f7bb054aed2405ca076b9d6"
+dependencies = [
+ "anchor-lang",
+ "cpi-helper",
+ "messagelib-interface",
+ "solana-helper",
+ "solana-program",
+ "utils",
+]
 
 [[package]]
 name = "env_logger"
@@ -1193,6 +1217,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "num_enum 0.7.0",
+ "oapp",
  "solana-program",
  "spl-memo",
 ]
@@ -1231,6 +1256,14 @@ dependencies = [
  "keccak",
  "rand_core 0.6.4",
  "zeroize",
+]
+
+[[package]]
+name = "messagelib-interface"
+version = "0.1.0"
+source = "git+https://github.com/LayerZero-Labs/LayerZero-v2.git?rev=7aebbd7c79b2dc818f7bb054aed2405ca076b9d6#7aebbd7c79b2dc818f7bb054aed2405ca076b9d6"
+dependencies = [
+ "anchor-lang",
 ]
 
 [[package]]
@@ -1331,6 +1364,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.75",
+]
+
+[[package]]
+name = "oapp"
+version = "0.1.0"
+source = "git+https://github.com/LayerZero-Labs/LayerZero-v2.git?rev=7aebbd7c79b2dc818f7bb054aed2405ca076b9d6#7aebbd7c79b2dc818f7bb054aed2405ca076b9d6"
+dependencies = [
+ "anchor-lang",
+ "endpoint",
 ]
 
 [[package]]
@@ -1655,9 +1697,9 @@ checksum = "61697e0a1c7e512e84a621326239844a24d8207b4669b41bc18b32ea5cbf988b"
 
 [[package]]
 name = "serde"
-version = "1.0.208"
+version = "1.0.209"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cff085d2cb684faa248efb494c39b68e522822ac0de72ccf08109abde717cfb2"
+checksum = "99fce0ffe7310761ca6bf9faf5115afbc19688edd00171d81b1bb1b116c63e09"
 dependencies = [
  "serde_derive",
 ]
@@ -1673,9 +1715,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.208"
+version = "1.0.209"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "24008e81ff7613ed8e5ba0cfaf24e2c2f1e5b8a0495711e44fcd4882fca62bcf"
+checksum = "a5831b979fd7b5439637af1752d535ff49f4860c0f341d1baeb6faf0f4242170"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1792,9 +1834,9 @@ checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 
 [[package]]
 name = "solana-frozen-abi"
-version = "1.17.34"
+version = "1.17.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "219c484f952f006e37a1a2598aebcc4dcfd48478c03fc2ce2d99787a5c78f248"
+checksum = "96734b05823c8b515f8e3cc02641a27aee2c9760b1a43c74cb20f2a1ab0ab76c"
 dependencies = [
  "ahash 0.8.5",
  "blake3",
@@ -1822,9 +1864,9 @@ dependencies = [
 
 [[package]]
 name = "solana-frozen-abi-macro"
-version = "1.17.34"
+version = "1.17.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ffe4e1dc5fd61ac10c304b3eb8ddb49737b13e975281d623a6083cf5cf0a8616"
+checksum = "9a0f1291a464fd046135d019d57a81be165ee3d23aa7df880b47dac683a0582a"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1833,10 +1875,22 @@ dependencies = [
 ]
 
 [[package]]
-name = "solana-logger"
-version = "1.17.34"
+name = "solana-helper"
+version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64b4f281f2263de6d9cc65680b90b6bd2c93ba7de573db83fc86e2d05ca7ea8c"
+checksum = "09c6deff8c48efb84b5828db064ad9873ef3445f129f888b4b6a664bd5220e35"
+dependencies = [
+ "bs58 0.5.1",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "solana-logger"
+version = "1.17.31"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c5977c8f24b83cf50e7139ffdb25d70bad6a177f18ccc79ca2293d6a987fa81c"
 dependencies = [
  "env_logger",
  "lazy_static",
@@ -1845,9 +1899,9 @@ dependencies = [
 
 [[package]]
 name = "solana-program"
-version = "1.17.34"
+version = "1.17.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93dc0f422549c23c4464eaa9383f4b09cd92b50dea750731dd3c31d3ee2d310f"
+checksum = "6412447793f8a3ef7526655906728325093b472e481791ac5c584e8d272166dc"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -1899,9 +1953,9 @@ dependencies = [
 
 [[package]]
 name = "solana-sdk"
-version = "1.17.34"
+version = "1.17.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3892ee0e2acdfbeae7315db6c7c56356384631deb943377de5957074bd2dc4d1"
+checksum = "de1ce8848de4198f9bc7e4574252be02b1ed86ecbc2fff506780d5f8d6e4c4a8"
 dependencies = [
  "assert_matches",
  "base64 0.21.7",
@@ -1953,9 +2007,9 @@ dependencies = [
 
 [[package]]
 name = "solana-sdk-macro"
-version = "1.17.34"
+version = "1.17.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8019cc997f6c07f09b23dfeb2c45530fa94df2e2fb9d654f3c772c9766a1511f"
+checksum = "bc5cc46bbda0a5472d8d0a4c846b22941436ac45c31456d3e885a387a5f264f7"
 dependencies = [
  "bs58 0.4.0",
  "proc-macro2",
@@ -1966,9 +2020,9 @@ dependencies = [
 
 [[package]]
 name = "solana-zk-token-sdk"
-version = "1.17.34"
+version = "1.17.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70a06e103ed5adf1664f9cca3d1c64edad8b5b603255d8a5dd21a4ac5d86b89c"
+checksum = "597dddc8ab46852dea7fc3d22e031fa4ffdb1b2291ac24d960605424a510a5f5"
 dependencies = [
  "aes-gcm-siv",
  "base64 0.21.7",
@@ -2353,6 +2407,14 @@ checksum = "0200d0fc04d809396c2ad43f3c95da3582a2556eba8d453c1087f4120ee352ff"
 dependencies = [
  "fnv",
  "lazy_static",
+]
+
+[[package]]
+name = "utils"
+version = "0.1.0"
+source = "git+https://github.com/LayerZero-Labs/LayerZero-v2.git?rev=7aebbd7c79b2dc818f7bb054aed2405ca076b9d6#7aebbd7c79b2dc818f7bb054aed2405ca076b9d6"
+dependencies = [
+ "anchor-lang",
 ]
 
 [[package]]

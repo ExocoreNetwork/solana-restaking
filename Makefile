@@ -10,7 +10,7 @@ local_validator: set-localnet
 	--ledger .anchor/test-ledger/ --reset
 
 setup0:
-	solana-install init 1.17.34
+	solana-install init 1.17.31
 
 setup1:
 	avm use 0.29.0

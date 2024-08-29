@@ -1,7 +1,7 @@
 mod config;
+mod message_list;
 mod vault;
-mod message;
 
 pub use config::*;
+pub use message_list::*;
 pub use vault::*;
-pub use message::*;

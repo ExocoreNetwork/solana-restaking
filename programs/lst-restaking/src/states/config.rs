@@ -1,11 +1,10 @@
-use anchor_lang::prelude::*;
 use crate::errors::LstRestakingError;
+use anchor_lang::prelude::*;
 
 #[account]
 pub struct Config {
     pub owner: Pubkey,
     pub pending_owner: Pubkey,
-    pub nonce: u128,
     pub white_list_tokens: Vec<Token>,
     pub _padding: Vec<u8>,
 }
@@ -13,13 +12,13 @@ pub struct Config {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct Token {
     mint: Pubkey,
-    active: bool
+    active: bool,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Copy, Clone)]
 pub enum Action {
     Add,
-    Deactivate
+    Deactivate,
 }
 
 impl Config {
@@ -34,18 +33,18 @@ impl Config {
             Action::Add => {
                 if let Some(token) = self.white_list_tokens.iter_mut().find(|t| t.mint == mint) {
                     if token.active {
-                        return Err(LstRestakingError::MintAlreadyExists.into())
+                        return Err(LstRestakingError::MintAlreadyExists.into());
                     }
                     token.active = true
                 } else {
-                    self.white_list_tokens.push(Token {mint, active: true})
+                    self.white_list_tokens.push(Token { mint, active: true })
                 }
-            },
+            }
             Action::Deactivate => {
                 if let Some(token) = self.white_list_tokens.iter_mut().find(|t| t.mint == mint) {
                     token.active = false
                 } else {
-                    return Err(LstRestakingError::MintNotExists.into())
+                    return Err(LstRestakingError::MintNotExists.into());
                 }
             }
         }
@@ -54,7 +53,10 @@ impl Config {
     }
 
     pub fn validate_mint(&self, mint: &Pubkey) -> Result<bool> {
-        Ok(self.white_list_tokens.iter().any(|t| t.mint == *mint && t.active == true))
+        Ok(self
+            .white_list_tokens
+            .iter()
+            .any(|t| t.mint == *mint && t.active == true))
     }
 }
 
