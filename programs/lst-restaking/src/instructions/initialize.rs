@@ -1,48 +1,28 @@
-use crate::states::Config;
+use crate::states::{Config, MessageList};
 use anchor_lang::prelude::*;
 use oapp::endpoint::instructions::RegisterOAppParams;
-// use oapp::endpoint::cpi::accounts::RegisterOApp;
-// use oapp::endpoint::endpoint::register_oapp;
-// use oapp::endpoint::instructions::{RegisterOAppParams};
 use oapp::endpoint::program::Endpoint;
-use oapp::endpoint_cpi::register_oapp;
+use oapp::endpoint_cpi;
 
-pub fn initialize(ctx: Context<InitConfig>) -> Result<()> {
+pub fn initialize(ctx: Context<InitConfig>, params: InitConfigParams) -> Result<()> {
     let config = &mut ctx.accounts.config;
     config.owner = ctx.accounts.owner.key();
     config.pending_owner = ctx.accounts.owner.key();
 
+    config.remote_eid = params.remote_eid;
+    config.receiver = params.receiver;
+
     let signer = &[Config::CONFIG_SEED_PREFIX, &[ctx.bumps.config][..]];
 
-    register_oapp(
+    endpoint_cpi::register_oapp(
         ctx.accounts.endpoint_program.key(),
         ctx.accounts.config.key(),
-        &[
-            ctx.accounts.owner.to_account_info(),
-            ctx.accounts.config.to_account_info(),
-            ctx.accounts.oapp_registry.to_account_info(),
-            ctx.accounts.system_program.to_account_info()
-        ],
+        ctx.remaining_accounts,
         signer,
         RegisterOAppParams {
-            delegate: ctx.accounts.delegate.key()
-        })?;
-
-    // register_oapp(
-    //     Context::new_with_signer(
-    //         ctx.accounts.endpoint_program.to_account_info(),
-    //         RegisterOApp {
-    //             payer: ctx.accounts.owner.to_account_info(),
-    //             oapp: ctx.accounts.config.to_account_info(),
-    //             oapp_registry: ctx.accounts.oapp_registry.to_account_info(),
-    //             system_program: ctx.accounts.system_program.to_account_info(),
-    //         },
-    //         &[signer],
-    //     ),
-    //     RegisterOAppParams {
-    //         delegate: ctx.accounts.delegate.key(),
-    //     },
-    // )?;
+            delegate: ctx.accounts.delegate.key(),
+        },
+    )?;
 
     msg!("Successful to initialize config");
 
@@ -62,9 +42,21 @@ pub struct InitConfig<'info> {
         space = 8 + Config::LEN
     )]
     config: Account<'info, Config>,
+    #[account(
+        init,
+        payer = owner,
+        seeds = [MessageList::MESSAGE_SEED_PREFIX, config.key().as_ref()],
+        bump,
+        space = 8 + MessageList::INIT_SPACE
+    )]
+    message_list: Account<'info, MessageList>,
     delegate: SystemAccount<'info>,
-    /// CHECK: PDA account, will be created in lz
-    oapp_registry: UncheckedAccount<'info>,
     endpoint_program: Program<'info, Endpoint>,
     system_program: Program<'info, System>,
+}
+
+#[derive(Clone, AnchorSerialize, AnchorDeserialize)]
+pub struct InitConfigParams {
+    remote_eid: u32,
+    receiver: [u8; 32]
 }

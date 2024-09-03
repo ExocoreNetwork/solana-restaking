@@ -13,14 +13,16 @@ import {
     getOAppRegistry,
     getPendingNonce,
     getReceiveLibraryConfig,
-    getSendLibraryConfig,
-    LST_RESTAKING_PROGRAM_ID,
+    getSendLibraryConfig, getTokenAccount, getVault,
     remoteEid,
     remoteOapp,
     SYSTEM_PROGRAM_ID,
     testKeys
 } from "../utils";
 import {assert} from "chai";
+import {LAMPORTS_PER_SOL} from "@solana/web3.js";
+import BN from "bn.js";
+import {TOKEN_PROGRAM_ID} from "@coral-xyz/anchor/dist/cjs/utils/token";
 
 
 describe("solana-restaking", () => {
@@ -40,14 +42,21 @@ describe("solana-restaking", () => {
     anchor.setProvider(customProvider);
 
     const program = anchor.workspace.LstRestaking as Program<LstRestaking>;
-    // const endpoint_program = anchor.workspace.Endpoint as Program<Endpoint>;
 
-    const endpoint_program = new Program(IDL, ENDPOINT_PROGRAM_ID, provider);
+    // const endpoint_program = new Program(IDL, ENDPOINT_PROGRAM_ID, provider);
 
-    it("Is initialized!", async () => {
-        const [owner,,,,, delegate] = await testKeys();
+    it("Deposit", async () => {
+        const [,,user,,, delegate] = await testKeys();
+
+        const mint = new web3.PublicKey(process.env.MINT_ADDRESS);
 
         const [config] = await getConfig();
+
+        const [vault] = await getVault(mint, user.publicKey);
+
+        const poolTokenAccount = await getTokenAccount(config, mint, true);
+
+        const userTokenAccount = await getTokenAccount(user.publicKey, mint);
 
         const [OApp] = await getOApp();
 
@@ -65,18 +74,23 @@ describe("solana-restaking", () => {
 
         console.log(`delegate pubkey: ${delegate.publicKey}`);
 
-        await airdrop(program.provider.connection, owner.publicKey);
+        await airdrop(program.provider.connection, user.publicKey);
         await airdrop(program.provider.connection, delegate.publicKey);
 
+        const depositAmount = new BN(10000 * LAMPORTS_PER_SOL);
+
         const init_tx= await program.methods
-            .initialize({
-                remoteEid: remoteEid,
-                receiver: remoteOapp
+            .deposit({
+                amountIn: depositAmount
             })
             .accounts({
-                owner: owner.publicKey,
+                depositor: user.publicKey,
+                vault,
+                mint,
                 config,
-                delegate: delegate.publicKey,
+                depositorTokenAccount: userTokenAccount,
+                poolTokenAccount,
+                tokenProgram: TOKEN_PROGRAM_ID,
                 endpointProgram: ENDPOINT_PROGRAM_ID
             })
             .remainingAccounts([
@@ -88,7 +102,7 @@ describe("solana-restaking", () => {
                 {
                     isSigner: true,
                     isWritable: true,
-                    pubkey: owner.publicKey
+                    pubkey: user.publicKey
                 },
                 {
                     isSigner: false,
@@ -117,65 +131,14 @@ describe("solana-restaking", () => {
                 }
 
             ])
-            .signers([owner])
+            .signers([user])
             .rpc()
             .catch((e) => {console.log(e)});
 
         console.log("Your transaction signature", init_tx);
 
-        let tx = new web3.Transaction();
-        // init nonce
-        const instr1 = await endpoint_program.methods.initNonce({
-            localOapp: OApp,
-            remoteEid,
-            remoteOapp,
-            })
-            .accounts({
-                delegate: delegate.publicKey,
-                oappRegistry,
-                nonce,
-                pendingInboundNonce
-            })
-            .instruction();
+        const VaultState = await program.account.vault.fetch(vault);
 
-        tx.add(instr1);
-        // init_send_library
-        const instr2 = await endpoint_program.methods.initSendLibrary(
-            {
-                sender: OApp,
-                eid,
-            }
-        )
-            .accounts({
-                delegate: delegate.publicKey,
-                oappRegistry,
-                sendLibraryConfig,
-            })
-            .instruction();
-
-
-        tx.add(instr2);
-        // // init_receive_library
-        const instr3 = await endpoint_program.methods.initReceiveLibrary(
-            {
-                receiver: OApp,
-                eid,
-            })
-            .accounts({
-                delegate: delegate.publicKey,
-                oappRegistry,
-                receiveLibraryConfig
-            })
-            .instruction();
-
-        tx.add(instr3);
-
-        await provider.connection.sendTransaction(tx, [delegate]);
-
-        console.log(`Your transaction signature: ${tx.signature}`);
-
-        const configState = await program.account.config.fetch(config);
-
-        assert.equal(configState.owner.toString(), owner.publicKey.toString(), "Initialize failed");
+        assert.equal(VaultState.depositBalance.toString(), depositAmount.toString(), "Deposit failed");
     });
 });

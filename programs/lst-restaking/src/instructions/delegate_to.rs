@@ -3,30 +3,27 @@ use anchor_spl::token_interface::Mint;
 use oapp::endpoint::instructions::SendParams;
 use oapp::endpoint::program::Endpoint;
 use oapp::endpoint_cpi::send;
-use crate::errors::LstRestakingError;
-use crate::states::{Config, MessageList, MessageWithoutOperator, RequestAction, Vault};
+use crate::states::{Config, MessageList, MessageWithOperator, RequestAction, Vault};
 use crate::utils::encode;
 
-pub fn withdraw_reward_from_exocore(ctx: Context<WithdrawReward>, params: WithdrawRewardParams) -> Result<()> {
-    // validate mint
-    let config = &mut ctx.accounts.config;
-    let mint = &ctx.accounts.mint.key();
+pub fn delegate_to(ctx: Context<DelegateTo>, params: DelegateToParams) -> Result<()> {
+    let config = &ctx.accounts.config;
 
-    require!(config.validate_mint(mint)?, LstRestakingError::NotSupportMint);
-
-    let message = encode(RequestAction::WithdrawRewardFromExocore(
-        MessageWithoutOperator {
+    let message = encode(RequestAction::DelegateTo(
+        MessageWithOperator {
             mint: ctx.accounts.mint.key(),
             sender: ctx.accounts.depositor.key(),
-            amount: params.amount_out
+            operator: params.operator,
+            amount: params.amount
         }
     ))?;
+
     let signer = &[Config::CONFIG_SEED_PREFIX, &[ctx.bumps.config][..]];
 
     let dst_eid = config.remote_eid;
     let receiver = config.receiver;
 
-    let result = send(
+    send(
         ctx.accounts.endpoint_program.key(),
         ctx.accounts.config.key(),
         ctx.remaining_accounts,
@@ -40,21 +37,12 @@ pub fn withdraw_reward_from_exocore(ctx: Context<WithdrawReward>, params: Withdr
             lz_token_fee: 0,
         })?;
 
-    let message_list = &mut ctx.accounts.message_list;
-
-    message_list.pending(result.nonce,
-                         RequestAction::WithdrawRewardFromExocore(
-                             MessageWithoutOperator {
-                                 mint: ctx.accounts.mint.key(),
-                                 sender: ctx.accounts.depositor.key(),
-                                 amount: params.amount_out,
-                             }))?;
-
     Ok(())
 }
 
+
 #[derive(Accounts)]
-pub struct WithdrawReward<'info> {
+pub struct DelegateTo<'info> {
     #[account(mut)]
     depositor: Signer<'info>,
     #[account(
@@ -81,6 +69,7 @@ pub struct WithdrawReward<'info> {
 }
 
 #[derive(Clone, AnchorSerialize, AnchorDeserialize)]
-pub struct WithdrawRewardParams {
-    amount_out: u64
+pub struct DelegateToParams {
+    operator: [u8; 32],
+    amount: u64
 }

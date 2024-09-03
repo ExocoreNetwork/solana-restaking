@@ -1,9 +1,11 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { LstRestaking } from "../../../target/types/lst_restaking";
-import {createMint, getConfig, testKeys} from "../../utils";
+import {createMint, getConfig, getTokenAccount, testKeys} from "../../utils";
 import {expect} from "chai";
 import {PublicKey} from "@solana/web3.js";
+import {TOKEN_PROGRAM_ID} from "@coral-xyz/anchor/dist/cjs/utils/token";
+import {ASSOCIATED_TOKEN_PROGRAM_ID} from "@solana/spl-token";
 
 describe("solana-restaking", () => {
     // Configure the client to use the local cluster.
@@ -28,12 +30,17 @@ describe("solana-restaking", () => {
 
         const mint = await createMint(program, owner);
 
+        const poolTokenAccount = await getTokenAccount(config, mint, true);
+
         try {
             await program.methods.updateWhiteList({deactivate: {}})
                 .accounts({
-                    owner: owner.publicKey,
+                    operator: owner.publicKey,
                     config,
                     mint,
+                    poolTokenAccount,
+                    tokenProgram: TOKEN_PROGRAM_ID,
+                    associatedToken: ASSOCIATED_TOKEN_PROGRAM_ID,
                 })
                 .signers([owner])
                 .rpc();

@@ -1,9 +1,11 @@
 import * as anchor from "@coral-xyz/anchor";
 import {Program, web3} from "@coral-xyz/anchor";
 import { LstRestaking } from "../../../target/types/lst_restaking";
-import {getConfig, testKeys} from "../../utils";
+import {getConfig, getTokenAccount, testKeys} from "../../utils";
 import {expect} from "chai";
 import {config} from "dotenv";
+import {TOKEN_PROGRAM_ID} from "@coral-xyz/anchor/dist/cjs/utils/token";
+import {ASSOCIATED_TOKEN_PROGRAM_ID} from "@solana/spl-token";
 
 config();
 
@@ -30,6 +32,9 @@ describe("solana-restaking", () => {
 
         const mint = new web3.PublicKey(process.env.MINT_ADDRESS);
 
+        const poolTokenAccount = await getTokenAccount(config, mint, true);
+
+
         if (!mint)
         {
             console.log(`mint should not be empty`);
@@ -39,9 +44,12 @@ describe("solana-restaking", () => {
         try {
             await program.methods.updateWhiteList({add: {}})
                 .accounts({
-                    owner: owner.publicKey,
+                    operator: owner.publicKey,
                     config,
                     mint,
+                    poolTokenAccount,
+                    tokenProgram: TOKEN_PROGRAM_ID,
+                    associatedToken: ASSOCIATED_TOKEN_PROGRAM_ID,
                 })
                 .signers([owner])
                 .rpc();

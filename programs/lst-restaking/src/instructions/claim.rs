@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface, transfer_checked, TransferChecked};
 use crate::errors::LstRestakingError;
-use crate::states::{Config, Vault, Messages};
+use crate::states::{Config, Vault, MessageList};
 
 pub fn claim(ctx: Context<Claim>, amount_in: u64) -> Result<()> {
     // validate mint
@@ -11,9 +11,7 @@ pub fn claim(ctx: Context<Claim>, amount_in: u64) -> Result<()> {
 
     require!(config.validate_mint(mint)?, LstRestakingError::NotSupportMint);
 
-    config.nonce += 1;
-
-    let signer = &[Vault::SEED_PREFIX, mint.key().as_ref(), claimer.as_ref(), &[ctx.bumps.vault]];
+    let signer = &[Vault::SEED_PREFIX, mint.as_ref(), claimer.as_ref(), &[ctx.bumps.vault]];
 
     // transfer
     transfer_checked(
@@ -46,16 +44,16 @@ pub struct Claim<'info> {
     claimer: Signer<'info>,
     #[account(
         mut,
-        seeds = [Vault::SEED_PREFIX, mint.key().as_ref(), depositor.key().as_ref()],
+        seeds = [Vault::SEED_PREFIX, mint.key().as_ref(), claimer.key().as_ref()],
         bump
     )]
     vault: Account<'info, Vault>,
     #[account(
         mut,
-        seeds = [Message::SEED_PREFIX, config.key().as_ref()] ,
+        seeds = [MessageList::MESSAGE_SEED_PREFIX, config.key().as_ref()] ,
         bump
     )]
-    message: Account<'info, Messages>,
+    message: Account<'info, MessageList>,
     #[account(mut)]
     mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(
@@ -67,7 +65,7 @@ pub struct Claim<'info> {
     #[account(
         mut,
         token::mint = mint,
-        token::authority = depositor
+        token::authority = claimer
     )]
     claimer_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(

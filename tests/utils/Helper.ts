@@ -36,3 +36,21 @@ export const readKeypairToFile = async (
     );
   }
 };
+
+export function evmAddressToPaddedArray(evmAddress: string): number[] {
+  // Step 1: Remove the '0x' prefix if it exists
+  const strippedAddress = evmAddress.startsWith("0x") ? evmAddress.slice(2) : evmAddress;
+
+  // Step 2: Convert the hex string to a byte array
+  const addressBytes = Buffer.from(strippedAddress, 'hex');
+
+  // Step 3: Create a 32-byte array filled with zeros
+  const result = new Array(32).fill(0);
+
+  // Step 4: Copy the address bytes into the last 20 bytes of the result array
+  for (let i = 0; i < addressBytes.length; i++) {
+    result[12 + i] = addressBytes[i];
+  }
+
+  return result;
+}

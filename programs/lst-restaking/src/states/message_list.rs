@@ -17,17 +17,17 @@ pub enum RequestAction {
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
 pub struct MessageWithoutOperator {
-    mint: Pubkey,
-    sender: Pubkey,
-    amount: u64,
+    pub(crate) mint: Pubkey,
+    pub(crate) sender: Pubkey,
+    pub(crate) amount: u64,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
 pub struct MessageWithOperator {
-    mint: Pubkey,
-    sender: Pubkey,
-    operator: Pubkey,
-    amount: u64,
+    pub(crate) mint: Pubkey,
+    pub(crate) sender: Pubkey,
+    pub(crate) operator: [u8; 32],
+    pub(crate) amount: u64,
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
@@ -37,7 +37,9 @@ pub struct RespondMessage {
 }
 
 #[account]
+#[derive(InitSpace)]
 pub struct MessageList {
+    #[max_len(1024)]
     message: Vec<Message>,
 }
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
@@ -48,7 +50,6 @@ pub struct Message {
 
 impl MessageList {
     pub const MESSAGE_SEED_PREFIX: &'static [u8; 12] = b"message-list";
-    pub const LEN: usize = 16 + 1 + 4 + 32 + 32 + 32 + 8; // max length
 
     pub fn pending(&mut self, nonce: u64, action: RequestAction) -> Result<()> {
         self.message.push(Message { nonce, action });
@@ -56,7 +57,7 @@ impl MessageList {
         Ok(())
     }
 
-    pub fn processed(&mut self, nonce: u128) -> Result<()> {
+    pub fn processed(&mut self, nonce: u64) -> Result<()> {
         self.message.retain(|m| m.nonce == nonce);
 
         Ok(())

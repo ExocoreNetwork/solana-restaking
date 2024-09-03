@@ -6,6 +6,8 @@ pub struct Config {
     pub owner: Pubkey,
     pub pending_owner: Pubkey,
     pub white_list_tokens: Vec<Token>,
+    pub remote_eid: u32,
+    pub receiver: [u8; 32],
     pub _padding: Vec<u8>,
 }
 

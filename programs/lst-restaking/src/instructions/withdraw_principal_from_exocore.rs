@@ -1,9 +1,14 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::Mint;
-use crate::errors::LstRestakingError;
-use crate::states::{Config, Messages, Vault};
+use oapp::endpoint::instructions::SendParams;
+use oapp::endpoint::program::Endpoint;
+use oapp::endpoint_cpi::send;
 
-pub fn withdraw_principal_from_exocore(ctx: Context<WithdrawPrincipal>) -> Result<()> {
+use crate::errors::LstRestakingError;
+use crate::states::{Config, MessageList, MessageWithoutOperator, RequestAction, Vault};
+use crate::utils::encode;
+
+pub fn withdraw_principal_from_exocore(ctx: Context<WithdrawPrincipal>, params: WithdrawPrincipalParams) -> Result<()> {
 
     // validate mint
     let config = &mut ctx.accounts.config;
@@ -11,9 +16,41 @@ pub fn withdraw_principal_from_exocore(ctx: Context<WithdrawPrincipal>) -> Resul
 
     require!(config.validate_mint(mint)?, LstRestakingError::NotSupportMint);
 
-    config.nonce += 1;
+    let message = encode(RequestAction::WithdrawPrincipalFromExocore(
+        MessageWithoutOperator {
+            mint: ctx.accounts.mint.key(),
+            sender: ctx.accounts.depositor.key(),
+            amount: params.amount_out,
+        }
+    ))?;
+    let signer = &[Config::CONFIG_SEED_PREFIX, &[ctx.bumps.config][..]];
 
-    // TODO: send message to exocore
+    let dst_eid = config.remote_eid;
+    let receiver = config.receiver;
+
+    let result = send(
+        ctx.accounts.endpoint_program.key(),
+        ctx.accounts.config.key(),
+        ctx.remaining_accounts,
+        signer,
+        SendParams {
+            dst_eid,
+            receiver,
+            message,
+            options: vec![],
+            native_fee: 500000,
+            lz_token_fee: 0,
+        })?;
+
+    let message_list = &mut ctx.accounts.message_list;
+
+    message_list.pending(result.nonce,
+                         RequestAction::WithdrawPrincipalFromExocore(
+                             MessageWithoutOperator {
+                                 mint: ctx.accounts.mint.key(),
+                                 sender: ctx.accounts.depositor.key(),
+                                 amount: params.amount_out,
+                             }))?;
 
 
     Ok(())
@@ -31,10 +68,10 @@ pub struct WithdrawPrincipal<'info> {
     vault: Account<'info, Vault>,
     #[account(
         mut,
-        seeds = [Message::SEED_PREFIX, config.key().as_ref()] ,
+        seeds = [MessageList::MESSAGE_SEED_PREFIX, config.key().as_ref()],
         bump
     )]
-    message: Account<'info, Messages>,
+    message_list: Account<'info, MessageList>,
     #[account(mut)]
     mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(
@@ -43,4 +80,10 @@ pub struct WithdrawPrincipal<'info> {
         bump
     )]
     config: Account<'info, Config>,
+    endpoint_program: Program<'info, Endpoint>,
+}
+
+#[derive(Clone, AnchorSerialize, AnchorDeserialize)]
+pub struct WithdrawPrincipalParams {
+    amount_out: u64,
 }

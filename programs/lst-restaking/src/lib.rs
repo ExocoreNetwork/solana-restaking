@@ -15,8 +15,8 @@ pub mod lst_restaking {
     use crate::states::Action;
     use super::*;
 
-    pub fn initialize(ctx: Context<InitConfig>) -> Result<()> {
-        instructions::initialize(ctx)
+    pub fn initialize(ctx: Context<InitConfig>, params: InitConfigParams) -> Result<()> {
+        instructions::initialize(ctx, params)
     }
 
     pub fn transfer_ownership(ctx: Context<TransferOwnership>) -> Result<()> {
@@ -31,7 +31,22 @@ pub mod lst_restaking {
         instructions::accept(ctx)
     }
 
-    pub fn deposit(ctx: Context<Deposit>, amount_in: u64) -> Result<()> {
-        instructions::deposit(ctx, amount_in)
+    pub fn deposit(ctx: Context<Deposit>, params: DepositParams) -> Result<()> {
+        instructions::deposit(ctx, params)
+    }
+
+    pub fn delegate_to(ctx: Context<DelegateTo>, params: DelegateToParams) -> Result<()> {
+        instructions::delegate_to(ctx, params)
+    }
+
+    pub fn deposit_then_delegate_to(ctx: Context<DepositThenDelegateTo>, params: DepositThenDelegateToParams) -> Result<()> {
+        instructions::deposit_then_delegate_to(ctx, params)
+    }
+    pub fn withdraw_principal_from_exocore(ctx: Context<WithdrawPrincipal>, params: WithdrawPrincipalParams) -> Result<()> {
+        instructions::withdraw_principal_from_exocore(ctx, params)
+    }
+
+    pub fn withdraw_reward_from_exocore(ctx: Context<WithdrawReward>, params: WithdrawRewardParams) -> Result<()> {
+        instructions::withdraw_reward_from_exocore(ctx, params)
     }
 }
