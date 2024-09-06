@@ -9,3 +9,5 @@ test-ledger
 
 .keys
 .env
+
+*.so

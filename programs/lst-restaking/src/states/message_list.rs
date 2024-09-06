@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]
 pub enum RequestAction {
     Deposit(MessageWithoutOperator),
     WithdrawPrincipalFromExocore(MessageWithoutOperator),
@@ -15,14 +15,14 @@ pub enum RequestAction {
     Respond(RespondMessage),
 }
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]
 pub struct MessageWithoutOperator {
     pub(crate) mint: Pubkey,
     pub(crate) sender: Pubkey,
     pub(crate) amount: u64,
 }
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]
 pub struct MessageWithOperator {
     pub(crate) mint: Pubkey,
     pub(crate) sender: Pubkey,
@@ -30,7 +30,7 @@ pub struct MessageWithOperator {
     pub(crate) amount: u64,
 }
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]
 pub struct RespondMessage {
     request_id: u64,
     result: u8,
@@ -39,10 +39,10 @@ pub struct RespondMessage {
 #[account]
 #[derive(InitSpace)]
 pub struct MessageList {
-    #[max_len(1024)]
+    #[max_len(50)]
     message: Vec<Message>,
 }
-#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]
 pub struct Message {
     nonce: u64,
     action: RequestAction,

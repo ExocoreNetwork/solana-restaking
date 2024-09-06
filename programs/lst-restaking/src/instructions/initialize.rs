@@ -12,6 +12,8 @@ pub fn initialize(ctx: Context<InitConfig>, params: InitConfigParams) -> Result<
     config.remote_eid = params.remote_eid;
     config.receiver = params.receiver;
 
+    msg!("receiver: {:?}", config.receiver);
+
     let signer = &[Config::CONFIG_SEED_PREFIX, &[ctx.bumps.config][..]];
 
     endpoint_cpi::register_oapp(

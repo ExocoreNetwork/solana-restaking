@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
-use anchor_spl::token_interface::{Mint, TokenInterface};
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
 use crate::{errors::LstRestakingError, states::Config};
 use crate::states::Action;
@@ -22,26 +22,24 @@ pub fn update_white_list(ctx: Context<UpdateWhiteList>, action: Action) -> Resul
     config.update_white_list(mint, action)?;
 
     // TODO: create pool token account if add
-    match action {
-        Action::Add => {
-            if ctx.accounts.pool_token_account.try_data_is_empty().unwrap_or(true) {
-                create_token_account(
-                    &ctx.accounts.config.to_account_info(),
-                    &ctx.accounts.operator.to_account_info(),
-                    &ctx.accounts.pool_token_account.to_account_info(),
-                    &ctx.accounts.mint.to_account_info(),
-                    &ctx.accounts.system.to_account_info(),
-                    &ctx.accounts.token_program.to_account_info(),
-                    &[&[
-                        Config::POOL_SEED_PREFIX,
-                        mint.key().as_ref(),
-                        &[ctx.bumps.pool_token_account][..]
-                    ][..]])?;
-            }
-        }
-        _ => {}
-    }
-
+    // let signer = &[Config::CONFIG_SEED_PREFIX, token_program_id.as_ref(), mint.as_ref(), &[ctx.bumps.config][..]];
+    //
+    // match action {
+    //     Action::Add => {
+    //         if ctx.accounts.pool_token_account.try_data_is_empty().unwrap_or(true) {
+    //             create_token_account(
+    //                 &ctx.accounts.config.to_account_info(),
+    //                 &ctx.accounts.operator.to_account_info(),
+    //                 &ctx.accounts.pool_token_account.to_account_info(),
+    //                 &ctx.accounts.mint.to_account_info(),
+    //                 &ctx.accounts.system_program.to_account_info(),
+    //                 &ctx.accounts.token_program.to_account_info(),
+    //                 &[signer],
+    //             )?;
+    //         }
+    //     }
+    //     _ => {}
+    // }
 
     msg!("Successful to update white lists, token: {}", mint);
     Ok(())
@@ -51,18 +49,22 @@ pub fn update_white_list(ctx: Context<UpdateWhiteList>, action: Action) -> Resul
 pub struct UpdateWhiteList<'info> {
     #[account(mut)]
     operator: Signer<'info>,
-    #[account(mut)]
+    #[account(mut,
+    seeds = [Config::CONFIG_SEED_PREFIX],
+    bump
+    )]
     config: Account<'info, Config>,
     mint: Box<InterfaceAccount<'info, Mint>>,
     /// CHECK: create it if add
     #[account(
-        mut,
-        seeds = [Config::POOL_SEED_PREFIX, mint.key().as_ref()],
-        bump
+        init_if_needed,
+        payer = operator,
+        associated_token::mint = mint,
+        associated_token::authority = config
     )]
-    pool_token_account: UncheckedAccount<'info>,
+    pool_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
     token_program: Interface<'info, TokenInterface>,
-    associated_token: Program<'info, AssociatedToken>,
-    system: Program<'info, System>
+    associated_token_program: Program<'info, AssociatedToken>,
+    system_program: Program<'info, System>
 }
 

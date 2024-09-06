@@ -61,7 +61,7 @@ pub fn deposit_then_delegate_to(ctx: Context<DepositThenDelegateTo>, params: Dep
             dst_eid,
             receiver,
             message,
-            options: vec![],
+            options: params.opts.clone(),
             native_fee: 500000,
             lz_token_fee: 0,
         })?;
@@ -116,5 +116,6 @@ pub struct DepositThenDelegateTo<'info> {
 #[derive(Clone, AnchorDeserialize, AnchorSerialize)]
 pub struct DepositThenDelegateToParams {
     amount_in: u64,
-    operator: [u8; 32]
+    operator: [u8; 32],
+    opts: Vec<u8>
 }

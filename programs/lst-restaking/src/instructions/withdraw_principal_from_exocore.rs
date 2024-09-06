@@ -37,7 +37,7 @@ pub fn withdraw_principal_from_exocore(ctx: Context<WithdrawPrincipal>, params: 
             dst_eid,
             receiver,
             message,
-            options: vec![],
+            options: params.opts.clone(),
             native_fee: 500000,
             lz_token_fee: 0,
         })?;
@@ -86,4 +86,5 @@ pub struct WithdrawPrincipal<'info> {
 #[derive(Clone, AnchorSerialize, AnchorDeserialize)]
 pub struct WithdrawPrincipalParams {
     amount_out: u64,
+    opts: Vec<u8>
 }

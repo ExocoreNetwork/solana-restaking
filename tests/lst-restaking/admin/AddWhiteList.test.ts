@@ -1,11 +1,11 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { LstRestaking } from "../../../target/types/lst_restaking";
-import {getConfig, testKeys, createMint, getTokenAccount} from "../../utils";
+import {getConfig, testKeys, createTestMint, getTokenAccount, getPDATokenAccount} from "../../utils";
 import {assert} from "chai";
 import * as fs from "node:fs";
 import {TOKEN_PROGRAM_ID} from "@coral-xyz/anchor/dist/cjs/utils/token";
-import {ASSOCIATED_TOKEN_PROGRAM_ID} from "@solana/spl-token";
+import {ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddressSync} from "@solana/spl-token";
 
 describe("solana-restaking", () => {
   // Configure the client to use the local cluster.
@@ -30,10 +30,10 @@ describe("solana-restaking", () => {
       const [config] = await getConfig();
 
 
-      const mint = await createMint(program, owner);
+      const mint = await createTestMint(anchor.getProvider().connection, owner);
       fs.writeFileSync(".env", `MINT_ADDRESS=${mint.toBase58()}`);
 
-      const poolTokenAccount = await getTokenAccount(config, mint, true);
+      const poolTokenAccount = await getPDATokenAccount(mint, config);
 
       const tx = await program.methods.updateWhiteList({add: {}})
         .accounts({
@@ -42,7 +42,7 @@ describe("solana-restaking", () => {
             mint,
             poolTokenAccount,
             tokenProgram: TOKEN_PROGRAM_ID,
-            associatedToken: ASSOCIATED_TOKEN_PROGRAM_ID,
+            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         })
         .signers([owner])
         .rpc();

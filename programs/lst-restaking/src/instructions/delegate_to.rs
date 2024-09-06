@@ -71,5 +71,6 @@ pub struct DelegateTo<'info> {
 #[derive(Clone, AnchorSerialize, AnchorDeserialize)]
 pub struct DelegateToParams {
     operator: [u8; 32],
-    amount: u64
+    amount: u64,
+    opts: Vec<u8>
 }

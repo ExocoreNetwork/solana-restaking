@@ -1,5 +1,5 @@
 use crate::errors::LstRestakingError;
-use crate::states::{Config, MessageList, MessageWithoutOperator, RequestAction, Vault};
+use crate::states::{Config, MessageWithoutOperator, RequestAction, Vault};
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
@@ -11,7 +11,7 @@ use crate::utils::encode;
 
 pub fn deposit(ctx: Context<Deposit>, params: DepositParams) -> Result<()> {
     // validate mint
-    let config = &mut ctx.accounts.config;
+    let config = &ctx.accounts.config;
     let mint = &ctx.accounts.mint.key();
 
     require!(
@@ -46,12 +46,14 @@ pub fn deposit(ctx: Context<Deposit>, params: DepositParams) -> Result<()> {
         }
     ))?;
 
+    msg!("message: {:?}", message);
+
     let signer = &[Config::CONFIG_SEED_PREFIX, &[ctx.bumps.config][..]];
 
     let dst_eid = config.remote_eid;
     let receiver = config.receiver;
 
-    send(
+    let _ = send(
         ctx.accounts.endpoint_program.key(),
         ctx.accounts.config.key(),
         ctx.remaining_accounts,
@@ -60,8 +62,8 @@ pub fn deposit(ctx: Context<Deposit>, params: DepositParams) -> Result<()> {
             dst_eid,
             receiver,
             message,
-            options: vec![],
-            native_fee: 500000,
+            options: params.opts.clone(),
+            native_fee: 500_000,
             lz_token_fee: 0,
         })?;
 
@@ -74,8 +76,10 @@ pub struct Deposit<'info> {
     depositor: Signer<'info>,
     #[account(
         init_if_needed,
+        payer = depositor,
         seeds = [Vault::SEED_PREFIX, mint.key().as_ref(), depositor.key().as_ref()],
-        bump
+        bump,
+        space = 8 + Vault::INIT_SPACE
     )]
     vault: Account<'info, Vault>,
     #[account(mut)]
@@ -105,5 +109,6 @@ pub struct Deposit<'info> {
 
 #[derive(Clone, AnchorSerialize, AnchorDeserialize)]
 pub struct DepositParams {
-    amount_in: u64
+    amount_in: u64,
+    opts: Vec<u8>
 }

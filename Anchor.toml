@@ -30,3 +30,6 @@ transferOwnershipFailure = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 test
 
 accept = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/Accept.test.ts"
 acceptFailure = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/AcceptFailure.test.ts"
+
+#############
+deposit = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/Deposit.test.ts"

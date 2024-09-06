@@ -1,80 +1,57 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Program, web3 } from "@coral-xyz/anchor";
-import { TOKEN_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/utils/token";
+import {AnchorProvider} from "@coral-xyz/anchor";
+import { PublicKey, LAMPORTS_PER_SOL, Connection, Signer } from "@solana/web3.js";
 import {
-  createAssociatedTokenAccountInstruction,
-  createInitializeMintInstruction,
+    createAssociatedTokenAccountInstruction,
+    createMint,
+    getAssociatedTokenAddressSync,
+    getOrCreateAssociatedTokenAccount, mintTo
 } from "@solana/spl-token";
-import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { LstRestaking } from "../../target/types/lst_restaking";
+import {TOKEN_PROGRAM_ID} from "@coral-xyz/anchor/dist/cjs/utils/token";
 
 // airdrop
-export const airdrop = async (conn: web3.Connection, user: PublicKey) => {
-  const signature = await conn.requestAirdrop(user, LAMPORTS_PER_SOL);
+export const airdrop = async (conn: Connection, user: PublicKey) => {
+  const signature = await conn.requestAirdrop(user, 50 * LAMPORTS_PER_SOL);
   await conn.confirmTransaction(signature, "confirmed");
 
 };
 
-// create mint
-export const createMint = async (
-  program: Program<LstRestaking>,
-  payer: web3.Keypair,
-  decimals: number = 9
-) => {
-  const mint = anchor.web3.Keypair.generate();
-  const tx = new web3.Transaction().add(
-    web3.SystemProgram.createAccount({
-      fromPubkey: payer.publicKey,
-      newAccountPubkey: mint.publicKey,
-      space: 82, // 82 bytes for mint account
-      lamports:
-        await program.provider.connection.getMinimumBalanceForRentExemption(82),
-      programId: TOKEN_PROGRAM_ID,
-    }),
-    createInitializeMintInstruction(
-      mint.publicKey,
-      decimals,
-      payer.publicKey,
-      payer.publicKey,
-      TOKEN_PROGRAM_ID
-    )
-  );
+export const createTestMint = async (connection: Connection, mintAuthority: Signer) => {
+    return await createMint(
+        connection,
+        mintAuthority,
+        mintAuthority.publicKey,
+        null,
+        9
+    );
+}
 
-  await program.provider.sendAndConfirm(tx, [payer, mint]);
+export const getPDATokenAccount = async (mint: PublicKey, owner: PublicKey) => {
+    return getAssociatedTokenAddressSync(mint, owner, true);
+}
 
-  console.log(`created new mint: ${mint.publicKey}`);
-
-  return mint.publicKey;
-};
-
-// create token for user
-export const createOrGetTokenAccount = async (
-  program: Program,
-  mint: PublicKey,
-  user: PublicKey
+export const getTokenAccount = async (
+    connection: Connection,
+    mint: PublicKey,
+    owner: PublicKey,
+    payer: Signer,
+    mintAuthority: Signer,
 ): Promise<PublicKey> => {
-  const tokenAccount = anchor.utils.token.associatedAddress({
-    mint,
-    owner: user,
-  });
-
-  const accountInfo = await program.provider.connection.getAccountInfo(
-    tokenAccount
-  );
-
-  if (accountInfo === null) {
-    // Account does not exist, create it
-    const tx = new web3.Transaction().add(
-      createAssociatedTokenAccountInstruction(
-        program.provider.publicKey, // payer
-        tokenAccount, // associated token account
-        user, // owner of the account
-        mint // mint
-      )
+    const tokenAccount = await getOrCreateAssociatedTokenAccount(
+        connection,
+        payer,
+        mint,
+        owner,
     );
 
-    await program.provider.sendAndConfirm(tx);
-  }
+    await mintTo(
+        connection,
+        payer,
+        mint,
+        tokenAccount.address,
+        mintAuthority,
+        100_000_000_000_000,
+    );
 
-  return tokenAccount;
-};
+    return tokenAccount.address;
+}

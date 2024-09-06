@@ -4,10 +4,10 @@ import {LstRestaking} from "../../target/types/lst_restaking";
 import {IDL} from "../../target/types/endpoint";
 import {
     airdrop,
-    eid,
+    eid, ENDPOINT_EVENT_AUTHORITY,
     ENDPOINT_PROGRAM_ID,
-    getConfig,
-    getEventAuthority,
+    getConfig, getDefaultSendLibraryConfig,
+    getMessageList,
     getNonce,
     getOApp,
     getOAppRegistry,
@@ -53,20 +53,22 @@ describe("solana-restaking", () => {
 
         const [oappRegistry] = await getOAppRegistry(OApp);
 
-        const [eventAuthority] = await getEventAuthority();
-
         const [nonce] = await getNonce(OApp, remoteEid, remoteOapp);
 
         const [pendingInboundNonce] = await getPendingNonce(OApp, remoteEid, remoteOapp);
 
-        const [sendLibraryConfig] = await getSendLibraryConfig(OApp, eid);
+        const [sendLibraryConfig] = await getSendLibraryConfig(OApp, remoteEid);
+
+        const [defaultSendLibraryConfig] = await getDefaultSendLibraryConfig(remoteEid);
 
         const [receiveLibraryConfig] = await getReceiveLibraryConfig(OApp, eid);
 
+        const [messageList] = await getMessageList(config);
+
         console.log(`delegate pubkey: ${delegate.publicKey}`);
 
-        await airdrop(program.provider.connection, owner.publicKey);
-        await airdrop(program.provider.connection, delegate.publicKey);
+        await airdrop(anchor.getProvider().connection, owner.publicKey);
+        await airdrop(anchor.getProvider().connection, delegate.publicKey);
 
         const init_tx= await program.methods
             .initialize({
@@ -76,6 +78,7 @@ describe("solana-restaking", () => {
             .accounts({
                 owner: owner.publicKey,
                 config,
+                messageList,
                 delegate: delegate.publicKey,
                 endpointProgram: ENDPOINT_PROGRAM_ID
             })
@@ -108,7 +111,7 @@ describe("solana-restaking", () => {
                 {
                     isSigner: false,
                     isWritable: false,
-                    pubkey: eventAuthority
+                    pubkey: ENDPOINT_EVENT_AUTHORITY
                 },
                 {
                     isSigner: false,
@@ -134,7 +137,7 @@ describe("solana-restaking", () => {
                 delegate: delegate.publicKey,
                 oappRegistry,
                 nonce,
-                pendingInboundNonce
+                pendingInboundNonce,
             })
             .instruction();
 
@@ -143,7 +146,7 @@ describe("solana-restaking", () => {
         const instr2 = await endpoint_program.methods.initSendLibrary(
             {
                 sender: OApp,
-                eid,
+                eid: remoteEid,
             }
         )
             .accounts({
@@ -170,9 +173,13 @@ describe("solana-restaking", () => {
 
         tx.add(instr3);
 
-        await provider.connection.sendTransaction(tx, [delegate]);
+        const transactionSignature = await provider.connection.sendTransaction(tx, [delegate]);
 
-        console.log(`Your transaction signature: ${tx.signature}`);
+        console.log(`Your transaction signature: ${transactionSignature}`);
+
+        let defaultSendLibraryConfigState = await endpoint_program.account.sendLibraryConfig.fetch(defaultSendLibraryConfig)
+
+        console.log(`defaultSendLibraryConfig: ${defaultSendLibraryConfigState.messageLib}`);
 
         const configState = await program.account.config.fetch(config);
 

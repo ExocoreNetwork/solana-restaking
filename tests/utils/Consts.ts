@@ -1,15 +1,18 @@
 import { PublicKey } from "@solana/web3.js";
 import {evmAddressToPaddedArray, readKeypairToFile} from "./Helper";
-import {createMint} from "./Utils";
-import {Program, web3} from "@coral-xyz/anchor";
-import { LstRestaking } from "../../target/types/lst_restaking";
-
 
 export const LST_RESTAKING_PROGRAM_ID = new PublicKey(
   "68av2QdR1k1QeaxsJwjiB16QHXDhTuaS14tyTNM3MgHX"
 );
 
 export const ENDPOINT_PROGRAM_ID = new PublicKey("76y77prsiCMvXMjuoZ5VRrhG5qYBrUMYTE5WgHqgjEn6");
+export const ULN302_PROGRAM_ID = new PublicKey("7a4WjyR8VZ7yZz5XJAKm39BUGn5iT9CKcv2pmG9tdXVH");
+
+export const EXECUTOR_PROGRAM_ID= new PublicKey("6doghB248px58JSSwG4qejQ46kFMW4AMj7vzJnWZHNZn");
+
+export const PRICE_FEED_PROGRAM_ID = new PublicKey("8ahPGPjEbpgGaZx2NV1iG5Shj7TDwvsjkEDcGWjt94TP");
+
+export const DVN_PROGRAM_ID = new PublicKey("HtEYV4xB4wvsj5fgTkcfuChYpvGYzgzwvNhgDZQNh7wW");
 
 export const SYSTEM_PROGRAM_ID = new PublicKey("11111111111111111111111111111111");
 
@@ -18,6 +21,15 @@ export const remoteEid = 40259;
 
 export const eid = 40168;
 
+export const SEND_LIBRARY_INFO = new PublicKey("526PeNZfw8kSnDU4nmzJFVJzJWNhwmZykEyJr5XWz5Fv");
+export const ENDPOINT_SETTINGS = new PublicKey("2uk9pQh3tB5ErV7LGQJcbWjb4KeJ2UJki5qJZ8QG56G3");
+export const ULN_SETTINGS = new PublicKey("2XgGZG4oP29U3w5h4nTk1V2LFHL23zKDPJjs3psGzLKQ");
+export const EXECUTOR_CONFIG= new PublicKey("AwrbHeCyniXaQhiJZkLhgWdUCteeWSGaSN1sTfLiY7xK");
+export const PRICE_FEED_CONFIG = new PublicKey("CSFsUupvJEQQd1F4SsXGACJaxQX4eropQMkGV2696eeQ");
+export const DVN_CONFIG = new PublicKey("4VDjp6XQaxoZf5RGwiPU9NR1EXSZn2TP4ATMmiSzLfhb");
+
+export const ENDPOINT_EVENT_AUTHORITY = new PublicKey("F8E8QGhKmHEx2esh5LpVizzcP4cHYhzXdXTwg9w3YYY2");
+export const ULN_EVENT_AUTHORITY = new PublicKey("7n1YeBMVEUCJ4DscKAcpVQd6KXU7VpcEcc15ZuMcL4U3");
 
 export const testKeys = async () => {
   const OWNER = await readKeypairToFile("owner");
