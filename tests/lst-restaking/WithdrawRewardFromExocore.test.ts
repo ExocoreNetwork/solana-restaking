@@ -5,14 +5,14 @@ import {LstRestaking} from "../../target/types/lst_restaking";
 import {
     airdrop,
     ENDPOINT_PROGRAM_ID,
-    getConfig,
+    getConfig, getMessageList,
     getPDATokenAccount,
     getVault,
     sendRemainingAccounts,
     testKeys,
 } from "../utils";
 import {assert} from "chai";
-import {ComputeBudgetProgram, LAMPORTS_PER_SOL} from "@solana/web3.js";
+import {ComputeBudgetProgram, Connection, LAMPORTS_PER_SOL} from "@solana/web3.js";
 import BN from "bn.js";
 import {config} from "dotenv";
 import {Options} from "@layerzerolabs/lz-v2-utilities";
@@ -48,14 +48,18 @@ describe("solana-restaking", () => {
 
         const [vault] = await getVault(mint, user.publicKey);
 
+        const [messageList] = await getMessageList(config);
+
         const poolTokenAccount = await getPDATokenAccount(mint, config);
 
         console.log(`poolTokenAccount: ${poolTokenAccount}`);
 
         console.log(`delegate pubkey: ${delegate.publicKey}`);
 
-        await airdrop(anchor.getProvider().connection, user.publicKey);
-        await airdrop(anchor.getProvider().connection, delegate.publicKey);
+        const conn = anchor.getProvider().connection as unknown as Connection;
+
+        await airdrop(conn, user.publicKey);
+        await airdrop(conn, delegate.publicKey);
 
         const withdrawAmount = 10000 * LAMPORTS_PER_SOL;
 
@@ -77,6 +81,7 @@ describe("solana-restaking", () => {
                 vault,
                 mint,
                 config,
+                messageList,
                 endpointProgram: ENDPOINT_PROGRAM_ID
             })
             .remainingAccounts(

@@ -3,7 +3,7 @@ use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
 use crate::{errors::LstRestakingError, states::Config};
-use crate::states::Action;
+use crate::states::{Action, TokenWhiteList};
 use crate::utils::create_token_account;
 
 pub fn update_white_list(ctx: Context<UpdateWhiteList>, action: Action) -> Result<()> {
@@ -15,11 +15,11 @@ pub fn update_white_list(ctx: Context<UpdateWhiteList>, action: Action) -> Resul
         LstRestakingError::InvalidMintOwner
     );
 
-    let config = &mut ctx.accounts.config;
+    let token_white_list= &mut ctx.accounts.token_white_list;
 
     let mint = ctx.accounts.mint.key();
 
-    config.update_white_list(mint, action)?;
+    token_white_list.update_white_list(mint, action)?;
 
     // TODO: create pool token account if add
     // let signer = &[Config::CONFIG_SEED_PREFIX, token_program_id.as_ref(), mint.as_ref(), &[ctx.bumps.config][..]];
@@ -49,9 +49,11 @@ pub fn update_white_list(ctx: Context<UpdateWhiteList>, action: Action) -> Resul
 pub struct UpdateWhiteList<'info> {
     #[account(mut)]
     operator: Signer<'info>,
-    #[account(mut,
-    seeds = [Config::CONFIG_SEED_PREFIX],
-    bump
+    #[account(
+        mut,
+        seeds = [Config::CONFIG_SEED_PREFIX],
+        bump,
+        has_one = token_white_list @LstRestakingError::InvalidTokenWhiteList
     )]
     config: Account<'info, Config>,
     mint: Box<InterfaceAccount<'info, Mint>>,
@@ -63,6 +65,13 @@ pub struct UpdateWhiteList<'info> {
         associated_token::authority = config
     )]
     pool_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+    #[account(
+        mut,
+        realloc = token_white_list.get_size(),
+        realloc::payer = operator,
+        realloc::zero = false
+    )]
+    token_white_list: Box<Account<'info, TokenWhiteList>>,
     token_program: Interface<'info, TokenInterface>,
     associated_token_program: Program<'info, AssociatedToken>,
     system_program: Program<'info, System>

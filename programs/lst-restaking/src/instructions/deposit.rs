@@ -1,21 +1,21 @@
 use crate::errors::LstRestakingError;
-use crate::states::{Config, MessageWithoutOperator, RequestAction, Vault};
+use crate::states::{Config, MessageWithoutOperator, RequestAction, TokenWhiteList, Vault};
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
 };
-use oapp::endpoint::instructions::SendParams;
 use oapp::endpoint::program::Endpoint;
-use oapp::endpoint_cpi::send;
-use crate::utils::encode;
+use crate::utils::{encode, send};
 
 pub fn deposit(ctx: Context<Deposit>, params: DepositParams) -> Result<()> {
     // validate mint
-    let config = &ctx.accounts.config;
+    // let config = &ctx.accounts.config;
     let mint = &ctx.accounts.mint.key();
 
+    let token_white_list = &ctx.accounts.token_white_list;
+
     require!(
-        config.validate_mint(mint)?,
+        token_white_list.validate_mint(mint)?,
         LstRestakingError::NotSupportMint
     );
 
@@ -48,24 +48,14 @@ pub fn deposit(ctx: Context<Deposit>, params: DepositParams) -> Result<()> {
 
     msg!("message: {:?}", message);
 
-    let signer = &[Config::CONFIG_SEED_PREFIX, &[ctx.bumps.config][..]];
-
-    let dst_eid = config.remote_eid;
-    let receiver = config.receiver;
-
     let _ = send(
         ctx.accounts.endpoint_program.key(),
         ctx.accounts.config.key(),
         ctx.remaining_accounts,
-        signer,
-        SendParams {
-            dst_eid,
-            receiver,
-            message,
-            options: params.opts.clone(),
-            native_fee: 500_000,
-            lz_token_fee: 0,
-        })?;
+        ctx.bumps.config,
+        message,
+        params.opts.clone()
+        )?;
 
     Ok(())
 }
@@ -81,15 +71,16 @@ pub struct Deposit<'info> {
         bump,
         space = 8 + Vault::INIT_SPACE
     )]
-    vault: Account<'info, Vault>,
+    vault: Box<Account<'info, Vault>>,
     #[account(mut)]
     mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(
         mut,
         seeds = [Config::CONFIG_SEED_PREFIX],
-        bump
+        bump,
+        has_one = token_white_list @ LstRestakingError::InvalidTokenWhiteList
     )]
-    config: Account<'info, Config>,
+    config: Box<Account<'info, Config>>,
     #[account(
         mut,
         token::mint = mint,
@@ -102,6 +93,7 @@ pub struct Deposit<'info> {
         token::authority = config
     )]
     pool_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+    token_white_list: Box<Account<'info, TokenWhiteList>>,
     token_program: Interface<'info, TokenInterface>,
     endpoint_program: Program<'info, Endpoint>,
     system_program: Program<'info, System>,

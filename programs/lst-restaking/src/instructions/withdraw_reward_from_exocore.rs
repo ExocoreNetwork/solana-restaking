@@ -1,18 +1,18 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::Mint;
-use oapp::endpoint::instructions::SendParams;
 use oapp::endpoint::program::Endpoint;
-use oapp::endpoint_cpi::send;
 use crate::errors::LstRestakingError;
-use crate::states::{Config, MessageList, MessageWithoutOperator, RequestAction, Vault};
-use crate::utils::encode;
+use crate::states::{Config, MessageList, MessageWithoutOperator, RequestAction, TokenWhiteList, Vault};
+use crate::utils::{encode, send};
 
 pub fn withdraw_reward_from_exocore(ctx: Context<WithdrawReward>, params: WithdrawRewardParams) -> Result<()> {
     // validate mint
-    let config = &mut ctx.accounts.config;
+    // let config = &mut ctx.accounts.config;
     let mint = &ctx.accounts.mint.key();
 
-    require!(config.validate_mint(mint)?, LstRestakingError::NotSupportMint);
+    let token_white_list = &ctx.accounts.token_white_list;
+
+    require!(token_white_list.validate_mint(mint)?, LstRestakingError::NotSupportMint);
 
     let message = encode(RequestAction::WithdrawRewardFromExocore(
         MessageWithoutOperator {
@@ -21,28 +21,19 @@ pub fn withdraw_reward_from_exocore(ctx: Context<WithdrawReward>, params: Withdr
             amount: params.amount_out
         }
     ))?;
-    let signer = &[Config::CONFIG_SEED_PREFIX, &[ctx.bumps.config][..]];
 
-    let dst_eid = config.remote_eid;
-    let receiver = config.receiver;
-
-    let result = send(
+    let nonce = send(
         ctx.accounts.endpoint_program.key(),
         ctx.accounts.config.key(),
         ctx.remaining_accounts,
-        signer,
-        SendParams {
-            dst_eid,
-            receiver,
-            message,
-            options: params.opts.clone(),
-            native_fee: 500000,
-            lz_token_fee: 0,
-        })?;
+        ctx.bumps.config,
+        message,
+        params.opts.clone()
+    )?;
 
     let message_list = &mut ctx.accounts.message_list;
 
-    message_list.pending(result.nonce,
+    message_list.pending(nonce,
                          RequestAction::WithdrawRewardFromExocore(
                              MessageWithoutOperator {
                                  mint: ctx.accounts.mint.key(),
@@ -62,22 +53,27 @@ pub struct WithdrawReward<'info> {
         seeds = [Vault::SEED_PREFIX, mint.key().as_ref(), depositor.key().as_ref()],
         bump
     )]
-    vault: Account<'info, Vault>,
+    vault: Box<Account<'info, Vault>>,
     #[account(
         mut,
-        seeds = [MessageList::MESSAGE_SEED_PREFIX, config.key().as_ref()] ,
-        bump
+        realloc = message_list.get_size(),
+        realloc::payer = depositor,
+        realloc::zero = false
     )]
-    message_list: Account<'info, MessageList>,
+    message_list: Box<Account<'info, MessageList>>,
     #[account(mut)]
     mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(
         mut,
         seeds = [Config::CONFIG_SEED_PREFIX],
-        bump
+        bump,
+        has_one = message_list @LstRestakingError::InvalidMessageList,
+        has_one = token_white_list @ LstRestakingError::InvalidTokenWhiteList
     )]
-    config: Account<'info, Config>,
+    config: Box<Account<'info, Config>>,
+    token_white_list: Box<Account<'info, TokenWhiteList>>,
     endpoint_program: Program<'info, Endpoint>,
+    system_program: Program<'info, System>,
 }
 
 #[derive(Clone, AnchorSerialize, AnchorDeserialize)]

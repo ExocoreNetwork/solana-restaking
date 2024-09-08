@@ -1,13 +1,18 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::Mint;
-use oapp::endpoint::instructions::SendParams;
 use oapp::endpoint::program::Endpoint;
-use oapp::endpoint_cpi::send;
-use crate::states::{Config, MessageList, MessageWithOperator, RequestAction, Vault};
-use crate::utils::encode;
+use crate::states::{Config, MessageList, MessageWithOperator, RequestAction, TokenWhiteList, Vault};
+use crate::utils::{encode, send};
+use crate::errors::LstRestakingError;
 
 pub fn delegate_to(ctx: Context<DelegateTo>, params: DelegateToParams) -> Result<()> {
-    let config = &ctx.accounts.config;
+    let token_white_list = &ctx.accounts.token_white_list;
+    let mint = &ctx.accounts.mint.key();
+
+    require!(
+        token_white_list.validate_mint(mint)?,
+        LstRestakingError::NotSupportMint
+    );
 
     let message = encode(RequestAction::DelegateTo(
         MessageWithOperator {
@@ -18,24 +23,14 @@ pub fn delegate_to(ctx: Context<DelegateTo>, params: DelegateToParams) -> Result
         }
     ))?;
 
-    let signer = &[Config::CONFIG_SEED_PREFIX, &[ctx.bumps.config][..]];
-
-    let dst_eid = config.remote_eid;
-    let receiver = config.receiver;
-
-    send(
+    let _ = send(
         ctx.accounts.endpoint_program.key(),
         ctx.accounts.config.key(),
         ctx.remaining_accounts,
-        signer,
-        SendParams {
-            dst_eid,
-            receiver,
-            message,
-            options: vec![],
-            native_fee: 500000,
-            lz_token_fee: 0,
-        })?;
+        ctx.bumps.config,
+        message,
+        params.opts.clone()
+    )?;
 
     Ok(())
 }
@@ -62,9 +57,11 @@ pub struct DelegateTo<'info> {
     #[account(
         mut,
         seeds = [Config::CONFIG_SEED_PREFIX],
-        bump
+        bump,
+        has_one = token_white_list @ LstRestakingError::InvalidTokenWhiteList
     )]
     config: Account<'info, Config>,
+    token_white_list: Box<Account<'info, TokenWhiteList>>,
     endpoint_program: Program<'info, Endpoint>,
 }
 

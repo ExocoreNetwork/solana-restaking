@@ -1,3 +1,4 @@
+use std::mem;
 use anchor_lang::prelude::*;
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]
@@ -39,7 +40,7 @@ pub struct RespondMessage {
 #[account]
 #[derive(InitSpace)]
 pub struct MessageList {
-    #[max_len(50)]
+    #[max_len(0)]
     message: Vec<Message>,
 }
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]
@@ -61,5 +62,9 @@ impl MessageList {
         self.message.retain(|m| m.nonce == nonce);
 
         Ok(())
+    }
+
+    pub fn get_size(&self) -> usize {
+        8 + 4 + self.message.len() + mem::size_of::<Message>()
     }
 }

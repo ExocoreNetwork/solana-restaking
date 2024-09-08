@@ -14,4 +14,9 @@ pub enum LstRestakingError {
     InvalidNewOwner,
     #[msg("Not support mint")]
     NotSupportMint,
+    #[msg("Invalid message list account")]
+    InvalidMessageList,
+    #[msg("Invalid token white list account")]
+    InvalidTokenWhiteList
+
 }

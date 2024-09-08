@@ -117,5 +117,17 @@ acceptFailure:
 deposit:
 	anchor run deposit
 
+withdrawPrincipal:
+	anchor run withdrawPrincipal
+
+withdrawReward:
+	anchor run withdrawReward
+
+delegateTo:
+	anchor run delegateTo
+
+depositThenDelegateTo:
+	anchor run depositThenDelegateTo
+
 
 integrate: deploy initialize addToken deposit

@@ -10,6 +10,22 @@ declare_id!("68av2QdR1k1QeaxsJwjiB16QHXDhTuaS14tyTNM3MgHX");
 use instructions::*;
 use states::*;
 
+pub const RECEIVER: [u8; 32] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 192, 37, 69, 67, 136, 213, 44, 188, 201, 43, 141, 31, 87, 60, 103, 123, 163, 248, 241, 184];
+
+pub const fn remote_eid() -> u32 {
+    if cfg!(feature = "dev")
+    {
+        return 40259
+    } else if
+    cfg!(feature = "main")
+    {
+        return 40259
+    } else {
+        40259
+    }
+}
+
+
 #[program]
 pub mod lst_restaking {
     use crate::states::Action;

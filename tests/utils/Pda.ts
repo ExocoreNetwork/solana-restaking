@@ -17,6 +17,10 @@ const LST_RESTAKING_MESSAGE_LIST_PREFIX = Buffer.from(
     anchor.utils.bytes.utf8.encode("message-list")
 );
 
+const LST_RESTAKING_TOKEN_WHITE_LIST= Buffer.from(
+    anchor.utils.bytes.utf8.encode("tokenWhiteList")
+);
+
 const OAPP_SEEDS= Buffer.from(
     anchor.utils.bytes.utf8.encode("OApp")
 );
@@ -53,8 +57,8 @@ const SEND_CONFIG_SEED= Buffer.from(
     anchor.utils.bytes.utf8.encode("SendConfig")
 );
 
-const EXECUTOR_CONFIG_SEED= Buffer.from(
-    anchor.utils.bytes.utf8.encode("ExecutorConfig")
+const LZ_RECEIVE_TYPES_SEED= Buffer.from(
+    anchor.utils.bytes.utf8.encode("LzReceiveTypes")
 );
 export async function getConfig(): Promise<[PublicKey, number]> {
   const [address, bump] = PublicKey.findProgramAddressSync(
@@ -93,6 +97,28 @@ export async function getOApp(): Promise<[PublicKey, number]> {
     );
 
     console.log(`OApp: ${address}`);
+
+    return [address, bump]
+}
+
+export async function getTokenWhiteList(): Promise<[PublicKey, number]> {
+    const [address, bump] = PublicKey.findProgramAddressSync(
+        [LST_RESTAKING_TOKEN_WHITE_LIST],
+        LST_RESTAKING_PROGRAM_ID
+    );
+
+    console.log(`TokenWhiteList: ${address}`);
+
+    return [address, bump]
+}
+
+export async function getLZReceiveTypes(OApp: PublicKey): Promise<[PublicKey, number]> {
+    const [address, bump] = PublicKey.findProgramAddressSync(
+        [LZ_RECEIVE_TYPES_SEED, OApp.toBuffer()],
+        LST_RESTAKING_PROGRAM_ID
+    );
+
+    console.log(`LZReceiveTypes: ${address}`);
 
     return [address, bump]
 }
@@ -214,6 +240,17 @@ export async function getReceiveLibraryConfig(receiver: PublicKey, eid: number):
     console.log(`receiveLibraryConfig: ${address}`);
     return [address, bump];
 }
+
+// export async function getLZReceiveTypes(OApp: PublicKey): Promise<[PublicKey, number]> {
+//     const [address, bump] = PublicKey.findProgramAddressSync(
+//         [LZ_RECEIVE_TYPES_SEED, OApp.toBuffer()],
+//         ENDPOINT_PROGRAM_ID
+//     );
+//
+//     console.log(`LZReceiveTypes: ${address}`);
+//
+//     return [address, bump]
+// }
 
 //////////////////////////////Uln program/////////////////////////////
 export async function getSendConfig(sender: PublicKey, dstEid: number): Promise<[PublicKey, number]> {

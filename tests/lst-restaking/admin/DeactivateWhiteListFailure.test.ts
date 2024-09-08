@@ -1,11 +1,11 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { LstRestaking } from "../../../target/types/lst_restaking";
-import {createMint, getConfig, getTokenAccount, testKeys} from "../../utils";
+import {createTestMint, getConfig, getPDATokenAccount, getTokenWhiteList, testKeys} from "../../utils";
 import {expect} from "chai";
-import {PublicKey} from "@solana/web3.js";
+import {Connection, } from "@solana/web3.js";
 import {TOKEN_PROGRAM_ID} from "@coral-xyz/anchor/dist/cjs/utils/token";
-import {ASSOCIATED_TOKEN_PROGRAM_ID} from "@solana/spl-token";
+import {ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 describe("solana-restaking", () => {
     // Configure the client to use the local cluster.
@@ -27,10 +27,13 @@ describe("solana-restaking", () => {
     it("Remove token which is not in white list!", async () => {
         const [owner] = await testKeys();
         const [config] = await getConfig();
+        const [tokenWhiteList] = await getTokenWhiteList();
 
-        const mint = await createMint(program, owner);
+        const conn = anchor.getProvider().connection as unknown as Connection;
 
-        const poolTokenAccount = await getTokenAccount(config, mint, true);
+        const mint = await createTestMint(conn, owner);
+
+        const poolTokenAccount = await getPDATokenAccount(mint, config);
 
         try {
             await program.methods.updateWhiteList({deactivate: {}})
@@ -39,8 +42,9 @@ describe("solana-restaking", () => {
                     config,
                     mint,
                     poolTokenAccount,
+                    tokenWhiteList,
                     tokenProgram: TOKEN_PROGRAM_ID,
-                    associatedToken: ASSOCIATED_TOKEN_PROGRAM_ID,
+                    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
                 })
                 .signers([owner])
                 .rpc();

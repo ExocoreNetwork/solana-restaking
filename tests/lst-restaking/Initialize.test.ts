@@ -6,14 +6,14 @@ import {
     airdrop,
     eid, ENDPOINT_EVENT_AUTHORITY,
     ENDPOINT_PROGRAM_ID,
-    getConfig, getDefaultSendLibraryConfig,
+    getConfig, getDefaultSendLibraryConfig, getLZReceiveTypes,
     getMessageList,
     getNonce,
     getOApp,
     getOAppRegistry,
     getPendingNonce,
     getReceiveLibraryConfig,
-    getSendLibraryConfig,
+    getSendLibraryConfig, getTokenWhiteList,
     LST_RESTAKING_PROGRAM_ID,
     remoteEid,
     remoteOapp,
@@ -21,6 +21,7 @@ import {
     testKeys
 } from "../utils";
 import {assert} from "chai";
+import {Connection} from "@solana/web3.js";
 
 
 describe("solana-restaking", () => {
@@ -51,6 +52,8 @@ describe("solana-restaking", () => {
 
         const [OApp] = await getOApp();
 
+        const [tokenWhiteList] = await getTokenWhiteList();
+
         const [oappRegistry] = await getOAppRegistry(OApp);
 
         const [nonce] = await getNonce(OApp, remoteEid, remoteOapp);
@@ -65,10 +68,14 @@ describe("solana-restaking", () => {
 
         const [messageList] = await getMessageList(config);
 
+        const [lzReceiveTypes] = await getLZReceiveTypes(OApp);
+
         console.log(`delegate pubkey: ${delegate.publicKey}`);
 
-        await airdrop(anchor.getProvider().connection, owner.publicKey);
-        await airdrop(anchor.getProvider().connection, delegate.publicKey);
+        const conn = anchor.getProvider().connection as unknown as Connection;
+
+        await airdrop(conn, owner.publicKey);
+        await airdrop(conn, delegate.publicKey);
 
         const init_tx= await program.methods
             .initialize({
@@ -79,6 +86,8 @@ describe("solana-restaking", () => {
                 owner: owner.publicKey,
                 config,
                 messageList,
+                lzReceiveTypes,
+                tokenWhiteList,
                 delegate: delegate.publicKey,
                 endpointProgram: ENDPOINT_PROGRAM_ID
             })
@@ -184,5 +193,9 @@ describe("solana-restaking", () => {
         const configState = await program.account.config.fetch(config);
 
         assert.equal(configState.owner.toString(), owner.publicKey.toString(), "Initialize failed");
+
+        const lzReceiveTypesState = await program.account.lzReceiveTypes.fetch(lzReceiveTypes);
+
+        console.log(lzReceiveTypesState)
     });
 });

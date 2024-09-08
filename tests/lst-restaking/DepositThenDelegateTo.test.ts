@@ -14,7 +14,7 @@ import {
     testKeys,
 } from "../utils";
 import {assert} from "chai";
-import {ComputeBudgetProgram, LAMPORTS_PER_SOL} from "@solana/web3.js";
+import {ComputeBudgetProgram, Connection, LAMPORTS_PER_SOL} from "@solana/web3.js";
 import BN from "bn.js";
 import {TOKEN_PROGRAM_ID} from "@coral-xyz/anchor/dist/cjs/utils/token";
 import {config} from "dotenv";
@@ -59,12 +59,14 @@ describe("solana-restaking", () => {
 
         console.log(`delegate pubkey: ${delegate.publicKey}`);
 
-        await airdrop(anchor.getProvider().connection, user.publicKey);
-        await airdrop(anchor.getProvider().connection, delegate.publicKey);
+        const conn = anchor.getProvider().connection as unknown as Connection;
+
+        await airdrop(conn, user.publicKey);
+        await airdrop(conn, delegate.publicKey);
 
         const depositAmount = 2000 * LAMPORTS_PER_SOL;
 
-        const userTokenAccount = await getTokenAccount(anchor.getProvider().connection, mint, user.publicKey, user, owner);
+        const userTokenAccount = await getTokenAccount(conn, mint, user.publicKey, user, owner);
 
         const options = Options.newOptions().addExecutorLzReceiveOption(500_000).toBytes();
 

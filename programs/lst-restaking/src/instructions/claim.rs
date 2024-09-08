@@ -1,15 +1,15 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface, transfer_checked, TransferChecked};
 use crate::errors::LstRestakingError;
-use crate::states::{Config, Vault, MessageList};
+use crate::states::{Config, Vault, MessageList, TokenWhiteList};
 
 pub fn claim(ctx: Context<Claim>, amount_in: u64) -> Result<()> {
     // validate mint
-    let config = &mut ctx.accounts.config;
+    let token_white_list= &mut ctx.accounts.token_white_list;
     let mint = &ctx.accounts.mint.key();
     let claimer= &ctx.accounts.claimer.key();
 
-    require!(config.validate_mint(mint)?, LstRestakingError::NotSupportMint);
+    require!(token_white_list.validate_mint(mint)?, LstRestakingError::NotSupportMint);
 
     let signer = &[Vault::SEED_PREFIX, mint.as_ref(), claimer.as_ref(), &[ctx.bumps.vault]];
 
@@ -59,7 +59,9 @@ pub struct Claim<'info> {
     #[account(
         mut,
         seeds = [Config::CONFIG_SEED_PREFIX],
-        bump
+        bump,
+        has_one = token_white_list @ LstRestakingError::InvalidTokenWhiteList
+
     )]
     config: Account<'info, Config>,
     #[account(
@@ -74,6 +76,8 @@ pub struct Claim<'info> {
         token::authority = config
     )]
     pool_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+    token_white_list: Box<Account<'info, TokenWhiteList>>,
+
     token_program: Interface<'info, TokenInterface>,
     system_program: Program<'info, System>,
 }

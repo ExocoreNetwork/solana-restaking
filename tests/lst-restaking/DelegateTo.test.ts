@@ -5,7 +5,7 @@ import {LstRestaking} from "../../target/types/lst_restaking";
 import {
     airdrop,
     ENDPOINT_PROGRAM_ID,
-    getConfig,
+    getConfig, getLZReceiveTypes,
     getPDATokenAccount,
     getTokenAccount,
     getVault,
@@ -13,7 +13,7 @@ import {
     testKeys,
 } from "../utils";
 import {assert} from "chai";
-import {ComputeBudgetProgram, LAMPORTS_PER_SOL} from "@solana/web3.js";
+import {ComputeBudgetProgram, Connection, LAMPORTS_PER_SOL} from "@solana/web3.js";
 import BN from "bn.js";
 import {config} from "dotenv";
 import {Options} from "@layerzerolabs/lz-v2-utilities";
@@ -47,16 +47,20 @@ describe("solana-restaking", () => {
 
         const [vault] = await getVault(mint, user.publicKey);
 
+        const [lzReceiveTypes] = await getLZReceiveTypes(config);
+
         const poolTokenAccount = await getPDATokenAccount(mint, config);
 
         console.log(`poolTokenAccount: ${poolTokenAccount}`);
 
-        await airdrop(anchor.getProvider().connection, user.publicKey);
-        await airdrop(anchor.getProvider().connection, delegate.publicKey);
+        const conn = anchor.getProvider().connection as unknown as Connection;
+
+        await airdrop(conn, user.publicKey);
+        await airdrop(conn, delegate.publicKey);
 
         const depositAmount = 10000 * LAMPORTS_PER_SOL;
 
-        await getTokenAccount(anchor.getProvider().connection, mint, user.publicKey, user, owner);
+        await getTokenAccount(conn, mint, user.publicKey, user, owner);
 
         const options = Options.newOptions().addExecutorLzReceiveOption(500_000).toBytes();
 
@@ -91,5 +95,7 @@ describe("solana-restaking", () => {
         const VaultState = await program.account.vault.fetch(vault);
 
         assert.equal(VaultState.depositBalance.toString(), depositAmount.toString(), "Deposit failed");
+
+        // const VaultState = await program.account.vault.fetch(lzReceiveTypes);
     });
 });

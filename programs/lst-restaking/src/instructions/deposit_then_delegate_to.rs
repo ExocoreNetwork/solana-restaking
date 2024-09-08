@@ -1,21 +1,19 @@
 use crate::errors::LstRestakingError;
-use crate::states::{Config, MessageList, MessageWithOperator, RequestAction, Vault};
+use crate::states::{Config, MessageList, MessageWithOperator, RequestAction, TokenWhiteList, Vault};
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
 };
-use oapp::endpoint::instructions::SendParams;
 use oapp::endpoint::program::Endpoint;
-use oapp::endpoint_cpi::send;
-use crate::utils::encode;
+use crate::utils::{encode, send};
 
 pub fn deposit_then_delegate_to(ctx: Context<DepositThenDelegateTo>, params: DepositThenDelegateToParams) -> Result<()> {
     // validate mint
-    let config = &mut ctx.accounts.config;
+    let token_white_list = &mut ctx.accounts.token_white_list;
     let mint = &ctx.accounts.mint.key();
 
     require!(
-        config.validate_mint(mint)?,
+        token_white_list.validate_mint(mint)?,
         LstRestakingError::NotSupportMint
     );
 
@@ -47,24 +45,14 @@ pub fn deposit_then_delegate_to(ctx: Context<DepositThenDelegateTo>, params: Dep
         }
     ))?;
 
-    let signer = &[Config::CONFIG_SEED_PREFIX, &[ctx.bumps.config][..]];
-
-    let dst_eid = config.remote_eid;
-    let receiver = config.receiver;
-
-    send(
+    let _ = send(
         ctx.accounts.endpoint_program.key(),
         ctx.accounts.config.key(),
         ctx.remaining_accounts,
-        signer,
-        SendParams {
-            dst_eid,
-            receiver,
-            message,
-            options: params.opts.clone(),
-            native_fee: 500000,
-            lz_token_fee: 0,
-        })?;
+        ctx.bumps.config,
+        message,
+        params.opts.clone()
+    )?;
 
     // let message_list = &mut ctx.accounts.message_list;
     // message_list.pending(result.nonce, action);
@@ -93,7 +81,8 @@ pub struct DepositThenDelegateTo<'info> {
     #[account(
         mut,
         seeds = [Config::CONFIG_SEED_PREFIX],
-        bump
+        bump,
+        has_one = token_white_list @ LstRestakingError::InvalidTokenWhiteList
     )]
     config: Account<'info, Config>,
     #[account(
@@ -108,6 +97,7 @@ pub struct DepositThenDelegateTo<'info> {
         token::authority = config
     )]
     pool_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+    token_white_list: Box<Account<'info, TokenWhiteList>>,
     token_program: Interface<'info, TokenInterface>,
     endpoint_program: Program<'info, Endpoint>,
     system_program: Program<'info, System>,

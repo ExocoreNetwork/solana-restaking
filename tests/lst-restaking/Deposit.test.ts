@@ -7,13 +7,13 @@ import {
     ENDPOINT_PROGRAM_ID,
     getConfig,
     getPDATokenAccount,
-    getTokenAccount,
+    getTokenAccount, getTokenWhiteList,
     getVault,
     sendRemainingAccounts,
     testKeys,
 } from "../utils";
 import {assert} from "chai";
-import {LAMPORTS_PER_SOL, ComputeBudgetProgram} from "@solana/web3.js";
+import {LAMPORTS_PER_SOL, ComputeBudgetProgram, Connection} from "@solana/web3.js";
 import BN from "bn.js";
 import {TOKEN_PROGRAM_ID} from "@coral-xyz/anchor/dist/cjs/utils/token";
 import {config} from "dotenv";
@@ -31,8 +31,7 @@ describe("solana-restaking", () => {
         provider.connection,
         provider.wallet,
         {
-            preflightCommitment: "processed",  // or "confirmed" / "finalized"
-            commitment: "confirmed",           // or "finalized"
+            skipPreflight: true,
         }
     );
 
@@ -48,6 +47,8 @@ describe("solana-restaking", () => {
         const [config] = await getConfig();
 
         const [vault] = await getVault(mint, user.publicKey);
+        const [tokenWhiteList] = await getTokenWhiteList();
+
 
         const poolTokenAccount = await getPDATokenAccount(mint, config);
 
@@ -55,12 +56,14 @@ describe("solana-restaking", () => {
 
         console.log(`delegate pubkey: ${delegate.publicKey}`);
 
-        await airdrop(anchor.getProvider().connection, user.publicKey);
-        await airdrop(anchor.getProvider().connection, delegate.publicKey);
+        const conn = anchor.getProvider().connection as unknown as Connection;
+
+        await airdrop(conn, user.publicKey);
+        await airdrop(conn, delegate.publicKey);
 
         const depositAmount = 10000 * LAMPORTS_PER_SOL;
 
-        const userTokenAccount = await getTokenAccount(anchor.getProvider().connection, mint, user.publicKey, user, owner);
+        const userTokenAccount = await getTokenAccount(conn, mint, user.publicKey, user, owner);
 
         const options = Options.newOptions().addExecutorLzReceiveOption(500_000).toBytes();
 
@@ -82,6 +85,7 @@ describe("solana-restaking", () => {
                 config,
                 depositorTokenAccount: userTokenAccount,
                 poolTokenAccount,
+                tokenWhiteList,
                 tokenProgram: TOKEN_PROGRAM_ID,
                 endpointProgram: ENDPOINT_PROGRAM_ID
             })
