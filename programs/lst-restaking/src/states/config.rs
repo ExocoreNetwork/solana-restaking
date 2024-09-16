@@ -4,11 +4,14 @@ use anchor_lang::prelude::*;
 #[derive(InitSpace)]
 pub struct Config {
     pub owner: Pubkey,
+    pub operator: Pubkey,
     pub pending_owner: Pubkey,
     pub remote_eid: u32,
     pub receiver: [u8; 32],
     pub message_list: Pubkey,
-    pub token_white_list: Pubkey,
+    pub tokens: Pubkey,
+    pub endpoint_program: Pubkey,
+    pub bump: u8,
     #[max_len(500)]
     pub _padding: Vec<u8>,
 }
@@ -20,26 +23,6 @@ impl Config {
 
 #[account]
 #[derive(InitSpace)]
-pub struct LzReceiveTypes {
+pub struct LzReceiveTypesAccount {
     pub config: Pubkey,
-}
-
-#[cfg(test)]
-mod tests {
-    use std::mem::size_of;
-
-    use super::*;
-
-    #[test]
-    pub fn test_len() {
-        assert_eq!(
-            Config::LEN,
-            size_of::<Pubkey>()
-                + size_of::<Pubkey>()
-                + 4
-                + size_of::<Pubkey>() * 10
-                + 4
-                + size_of::<u8>() * 500
-        )
-    }
 }

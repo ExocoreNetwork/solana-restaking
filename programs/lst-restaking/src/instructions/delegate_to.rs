@@ -1,12 +1,12 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::Mint;
 use oapp::endpoint::program::Endpoint;
-use crate::states::{Config, MessageList, MessageWithOperator, RequestAction, TokenWhiteList, Vault};
+use crate::states::{Config, MessageList, MessageWithOperator, RequestAction, Tokens, Vault};
 use crate::utils::{encode, send};
 use crate::errors::LstRestakingError;
 
 pub fn delegate_to(ctx: Context<DelegateTo>, params: DelegateToParams) -> Result<()> {
-    let token_white_list = &ctx.accounts.token_white_list;
+    let token_white_list = &ctx.accounts.tokens;
     let mint = &ctx.accounts.mint.key();
 
     require!(
@@ -58,10 +58,10 @@ pub struct DelegateTo<'info> {
         mut,
         seeds = [Config::CONFIG_SEED_PREFIX],
         bump,
-        has_one = token_white_list @ LstRestakingError::InvalidTokenWhiteList
+        has_one = tokens @ LstRestakingError::InvalidTokens
     )]
     config: Account<'info, Config>,
-    token_white_list: Box<Account<'info, TokenWhiteList>>,
+    tokens: Box<Account<'info, Tokens>>,
     endpoint_program: Program<'info, Endpoint>,
 }
 

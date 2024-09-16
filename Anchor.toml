@@ -5,14 +5,15 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-lst-restaking = "68av2QdR1k1QeaxsJwjiB16QHXDhTuaS14tyTNM3MgHX"
+lst-restaking = "3DsgkXpd7Hwc6Q1iZ4YGLFrfSQZvotGSDGYRAvcDL53V"
 native-restaking = "AtfUbXniQddbR3DVetG2xJz7Hnyg8geNECRrDdnLsYZ5"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+# cluster = "Localnet"
+cluster = "Devnet"
 wallet = "/Users/scarecrow/.config/solana/id.json"
 
 [scripts]

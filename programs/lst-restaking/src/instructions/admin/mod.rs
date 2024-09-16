@@ -1,9 +1,7 @@
 mod accept;
-mod add_omitter;
 mod transfer_ownership;
-mod update_white_list;
+mod update_tvl_limit;
 
 pub use accept::*;
-pub use add_omitter::*;
 pub use transfer_ownership::*;
-pub use update_white_list::*;
+pub use update_tvl_limit::*;

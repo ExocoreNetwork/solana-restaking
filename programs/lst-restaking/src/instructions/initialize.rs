@@ -1,4 +1,4 @@
-use crate::states::{Config, LzReceiveTypes, MessageList, TokenWhiteList};
+use crate::states::{Config, LzReceiveTypesAccount, MessageList, Tokens};
 use anchor_lang::prelude::*;
 use oapp::endpoint::instructions::RegisterOAppParams;
 use oapp::endpoint::program::Endpoint;
@@ -12,7 +12,11 @@ pub fn initialize(ctx: Context<InitConfig>, params: InitConfigParams) -> Result<
     config.remote_eid = params.remote_eid;
     config.receiver = params.receiver;
     config.message_list = ctx.accounts.message_list.key();
-    config.token_white_list = ctx.accounts.token_white_list.key();
+    config.tokens = ctx.accounts.tokens.key();
+    config.endpoint_program = ctx.accounts.endpoint_program.key();
+    config.operator = ctx.accounts.operator.key();
+
+    config.bump = ctx.bumps.config;
 
     msg!("receiver: {:?}", config.receiver);
 
@@ -58,19 +62,20 @@ pub struct InitConfig<'info> {
     #[account(
         init,
         payer = owner,
-        space = 8 + LzReceiveTypes::INIT_SPACE,
+        space = 8 + LzReceiveTypesAccount::INIT_SPACE,
         seeds = [Config::LZ_RECEIVE_TYPES_SEED, &config.key().as_ref()],
         bump
     )]
-    lz_receive_types: Account<'info, LzReceiveTypes>,
+    lz_receive_types: Account<'info, LzReceiveTypesAccount>,
     #[account(
         init,
         payer = owner,
-        space = 8 + TokenWhiteList::INIT_SPACE,
-        seeds = [TokenWhiteList::SEED],
+        space = 8 + Tokens::INIT_SPACE,
+        seeds = [Tokens::SEED],
         bump
     )]
-    token_white_list: Account<'info, TokenWhiteList>,
+    tokens: Account<'info, Tokens>,
+    operator: SystemAccount<'info>,
     delegate: SystemAccount<'info>,
     endpoint_program: Program<'info, Endpoint>,
     system_program: Program<'info, System>,

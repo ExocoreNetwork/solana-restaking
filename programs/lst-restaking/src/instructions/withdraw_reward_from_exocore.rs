@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token_interface::Mint;
 use oapp::endpoint::program::Endpoint;
 use crate::errors::LstRestakingError;
-use crate::states::{Config, MessageList, MessageWithoutOperator, RequestAction, TokenWhiteList, Vault};
+use crate::states::{Config, MessageList, MessageWithoutOperator, RequestAction, Tokens, Vault};
 use crate::utils::{encode, send};
 
 pub fn withdraw_reward_from_exocore(ctx: Context<WithdrawReward>, params: WithdrawRewardParams) -> Result<()> {
@@ -10,7 +10,7 @@ pub fn withdraw_reward_from_exocore(ctx: Context<WithdrawReward>, params: Withdr
     // let config = &mut ctx.accounts.config;
     let mint = &ctx.accounts.mint.key();
 
-    let token_white_list = &ctx.accounts.token_white_list;
+    let token_white_list = &ctx.accounts.tokens;
 
     require!(token_white_list.validate_mint(mint)?, LstRestakingError::NotSupportMint);
 
@@ -68,10 +68,10 @@ pub struct WithdrawReward<'info> {
         seeds = [Config::CONFIG_SEED_PREFIX],
         bump,
         has_one = message_list @LstRestakingError::InvalidMessageList,
-        has_one = token_white_list @ LstRestakingError::InvalidTokenWhiteList
+        has_one = tokens @ LstRestakingError::InvalidTokens
     )]
     config: Box<Account<'info, Config>>,
-    token_white_list: Box<Account<'info, TokenWhiteList>>,
+    tokens: Box<Account<'info, Tokens>>,
     endpoint_program: Program<'info, Endpoint>,
     system_program: Program<'info, System>,
 }

@@ -1,5 +1,5 @@
 use crate::errors::LstRestakingError;
-use crate::states::{Config, MessageWithoutOperator, RequestAction, TokenWhiteList, Vault};
+use crate::states::{Config, MessageWithoutOperator, RequestAction, Tokens, Vault};
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
@@ -12,7 +12,7 @@ pub fn deposit(ctx: Context<Deposit>, params: DepositParams) -> Result<()> {
     // let config = &ctx.accounts.config;
     let mint = &ctx.accounts.mint.key();
 
-    let token_white_list = &ctx.accounts.token_white_list;
+    let token_white_list = &ctx.accounts.tokens;
 
     require!(
         token_white_list.validate_mint(mint)?,
@@ -78,7 +78,7 @@ pub struct Deposit<'info> {
         mut,
         seeds = [Config::CONFIG_SEED_PREFIX],
         bump,
-        has_one = token_white_list @ LstRestakingError::InvalidTokenWhiteList
+        has_one = tokens @ LstRestakingError::InvalidTokens
     )]
     config: Box<Account<'info, Config>>,
     #[account(
@@ -93,7 +93,7 @@ pub struct Deposit<'info> {
         token::authority = config
     )]
     pool_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
-    token_white_list: Box<Account<'info, TokenWhiteList>>,
+    tokens: Box<Account<'info, Tokens>>,
     token_program: Interface<'info, TokenInterface>,
     endpoint_program: Program<'info, Endpoint>,
     system_program: Program<'info, System>,

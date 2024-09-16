@@ -4,6 +4,8 @@ use anchor_lang::prelude::error_code;
 pub enum LstRestakingError {
     #[msg("Invalid owner")]
     InvalidOwner,
+    #[msg("Invalid operator")]
+    InvalidOperator,
     #[msg("The owner of mint is not token program id")]
     InvalidMintOwner,
     #[msg("Mint is already exists")]
@@ -16,7 +18,7 @@ pub enum LstRestakingError {
     NotSupportMint,
     #[msg("Invalid message list account")]
     InvalidMessageList,
-    #[msg("Invalid token white list account")]
-    InvalidTokenWhiteList
+    #[msg("Invalid tokens account")]
+    InvalidTokens
 
 }

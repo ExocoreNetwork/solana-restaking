@@ -1,8 +1,6 @@
-import * as anchor from "@coral-xyz/anchor";
-import {AnchorProvider} from "@coral-xyz/anchor";
 import { PublicKey, LAMPORTS_PER_SOL, Connection, Signer } from "@solana/web3.js";
 import {
-    createAssociatedTokenAccountInstruction,
+    NATIVE_MINT,
     createMint,
     getAssociatedTokenAddressSync,
     getOrCreateAssociatedTokenAccount, mintTo

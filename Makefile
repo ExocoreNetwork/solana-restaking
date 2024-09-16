@@ -17,6 +17,9 @@ export DVN_CONFIG = "4VDjp6XQaxoZf5RGwiPU9NR1EXSZn2TP4ATMmiSzLfhb"
 export DEFAULT_SEND_LIBRARY_CONFIG = "gU5rYi3eVPqFJzUgths7ZHxmbfQh2j3KQX3Mg7vR6sr"
 export DEFAULT_SEND_CONFIG = "5ro8ELnyfCmD8UnBgJ1yuZ3qgQ16WzaxTqgZDBRJmFBb"
 
+export LST_RESTAKING_PROGRAM_ID = "3DsgkXpd7Hwc6Q1iZ4YGLFrfSQZvotGSDGYRAvcDL53V"
+export LST_RESTAKING_PROGRAM_PATH = "target/deploy/lst_restaking.so"
+
 export ENDPOINT_NAME = "Endpoint.so"
 export ULN302_NAME = "uln302.so"
 export EXECUTOR_NAME = "Executor.so"
@@ -30,6 +33,9 @@ set-mainnet:
 
 set-devnet:
 	solana config set --url https://api.devnet.solana.com
+
+set-localnet:
+	solana config set --url localhost
 
 dump: set-devnet dump-endpoint dump-uln302 dump-executor dump-price_feed dump-dvn
 
@@ -48,8 +54,6 @@ dump-price_feed:
 dump-dvn:
 	solana program dump -u m ${DVN_ADDRESS} ${DVN_NAME}
 
-set-localnet:
-	solana config set --url localhost
 
 local_validator: set-localnet
 	solana-test-validator \
@@ -81,8 +85,15 @@ setup: setup0 setup1
 build0: setup
 	anchor build
 
-deploy:
-	anchor deploy
+deploy-lst:
+	anchor deploy --program-name lst-restaking --provider.wallet .keys/dev.json # --provider.cluster "https://devnet.helius-rpc.com/?api-key=975e42bc-9bb2-4aa3-9fd5-7a8a10719df6"
+
+upgrade-lst:
+	anchor upgrade --program-id ${LST_RESTAKING_PROGRAM_ID} ${LST_RESTAKING_PROGRAM_PATH} --provider.wallet .keys/dev.json
+
+upgrade-lst2:
+	solana program deploy --buffer ${LST_RESTAKING_BUFFER} --program-id ${LST_RESTAKING_PROGRAM_ID} ${LST_RESTAKING_PROGRAM_PATH} --upgrade-authority .keys/dev.json
+
 
 build:
 	anchor build

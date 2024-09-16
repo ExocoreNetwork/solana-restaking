@@ -6,6 +6,8 @@ mod withdraw_reward_from_exocore;
 mod deposit_then_delegate_to;
 mod claim;
 mod delegate_to;
+mod lz_receive_types;
+mod lz_receive;
 
 pub use admin::*;
 pub use initialize::*;
@@ -15,3 +17,5 @@ pub use withdraw_principal_from_exocore::*;
 pub use withdraw_reward_from_exocore::*;
 pub use delegate_to::*;
 pub use claim::*;
+pub use lz_receive_types::*;
+pub use lz_receive::*;

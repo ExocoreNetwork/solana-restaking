@@ -1,5 +1,5 @@
 use crate::errors::LstRestakingError;
-use crate::states::{Config, MessageList, MessageWithOperator, RequestAction, TokenWhiteList, Vault};
+use crate::states::{Config, MessageList, MessageWithOperator, RequestAction, Tokens, Vault};
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
@@ -9,7 +9,7 @@ use crate::utils::{encode, send};
 
 pub fn deposit_then_delegate_to(ctx: Context<DepositThenDelegateTo>, params: DepositThenDelegateToParams) -> Result<()> {
     // validate mint
-    let token_white_list = &mut ctx.accounts.token_white_list;
+    let token_white_list = &mut ctx.accounts.tokens;
     let mint = &ctx.accounts.mint.key();
 
     require!(
@@ -82,7 +82,7 @@ pub struct DepositThenDelegateTo<'info> {
         mut,
         seeds = [Config::CONFIG_SEED_PREFIX],
         bump,
-        has_one = token_white_list @ LstRestakingError::InvalidTokenWhiteList
+        has_one = tokens @ LstRestakingError::InvalidTokens
     )]
     config: Account<'info, Config>,
     #[account(
@@ -97,7 +97,7 @@ pub struct DepositThenDelegateTo<'info> {
         token::authority = config
     )]
     pool_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
-    token_white_list: Box<Account<'info, TokenWhiteList>>,
+    tokens: Box<Account<'info, Tokens>>,
     token_program: Interface<'info, TokenInterface>,
     endpoint_program: Program<'info, Endpoint>,
     system_program: Program<'info, System>,
