@@ -1,5 +1,5 @@
 use crate::errors::LstRestakingError;
-use crate::states::{Config, MessageList, MessageWithOperator, RequestAction, Tokens, Vault};
+use crate::states::{Config, MessageWithOperator, RequestAction, Tokens, Vault};
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
@@ -54,9 +54,6 @@ pub fn deposit_then_delegate_to(ctx: Context<DepositThenDelegateTo>, params: Dep
         params.opts.clone()
     )?;
 
-    // let message_list = &mut ctx.accounts.message_list;
-    // message_list.pending(result.nonce, action);
-
     Ok(())
 }
 
@@ -70,12 +67,6 @@ pub struct DepositThenDelegateTo<'info> {
         bump
     )]
     vault: Account<'info, Vault>,
-    #[account(
-        mut,
-        seeds = [MessageList::MESSAGE_SEED_PREFIX, config.key().as_ref()] ,
-        bump
-    )]
-    message_list: Account<'info, MessageList>,
     #[account(mut)]
     mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(

@@ -39,9 +39,9 @@ pub struct RespondMessage {
 
 #[account]
 #[derive(InitSpace)]
-pub struct MessageList {
+pub struct Messages {
     #[max_len(0)]
-    message: Vec<Message>,
+    data: Vec<Message>,
 }
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]
 pub struct Message {
@@ -49,22 +49,28 @@ pub struct Message {
     action: RequestAction,
 }
 
-impl MessageList {
-    pub const MESSAGE_SEED_PREFIX: &'static [u8; 12] = b"message-list";
+impl Messages {
+    pub const MESSAGE_SEED_PREFIX: &'static [u8] = b"messages";
 
     pub fn pending(&mut self, nonce: u64, action: RequestAction) -> Result<()> {
-        self.message.push(Message { nonce, action });
+        self.data.push(Message { nonce, action });
 
         Ok(())
     }
 
     pub fn processed(&mut self, nonce: u64) -> Result<()> {
-        self.message.retain(|m| m.nonce == nonce);
+        self.data.retain(|m| m.nonce == nonce);
 
         Ok(())
     }
 
+    pub fn action(&self, nonce: u64) -> Option<RequestAction> {
+        if let Some(msg) = self.data.iter().find(|msg| msg.nonce == nonce).cloned() {
+            Some(msg.action)
+        } else { None }
+    }
+
     pub fn get_size(&self) -> usize {
-        8 + 4 + self.message.len() + mem::size_of::<Message>()
+        8 + 4 + self.data.len() + mem::size_of::<Message>()
     }
 }

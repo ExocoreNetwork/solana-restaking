@@ -1,4 +1,4 @@
-use crate::states::{Config, LzReceiveTypesAccount, MessageList, Tokens};
+use crate::states::{Config, LzReceiveTypesAccount, Messages, Tokens};
 use anchor_lang::prelude::*;
 use oapp::endpoint::instructions::RegisterOAppParams;
 use oapp::endpoint::program::Endpoint;
@@ -11,7 +11,7 @@ pub fn initialize(ctx: Context<InitConfig>, params: InitConfigParams) -> Result<
 
     config.remote_eid = params.remote_eid;
     config.receiver = params.receiver;
-    config.message_list = ctx.accounts.message_list.key();
+    config.messages = ctx.accounts.messages.key();
     config.tokens = ctx.accounts.tokens.key();
     config.endpoint_program = ctx.accounts.endpoint_program.key();
     config.operator = ctx.accounts.operator.key();
@@ -54,11 +54,11 @@ pub struct InitConfig<'info> {
     #[account(
         init,
         payer = owner,
-        seeds = [MessageList::MESSAGE_SEED_PREFIX, config.key().as_ref()],
+        seeds = [Messages::MESSAGE_SEED_PREFIX, config.key().as_ref()],
         bump,
-        space = 8 + MessageList::INIT_SPACE
+        space = 8 + Messages::INIT_SPACE
     )]
-    message_list: Account<'info, MessageList>,
+    messages: Account<'info, Messages>,
     #[account(
         init,
         payer = owner,

@@ -8,7 +8,7 @@ pub struct Config {
     pub pending_owner: Pubkey,
     pub remote_eid: u32,
     pub receiver: [u8; 32],
-    pub message_list: Pubkey,
+    pub messages: Pubkey,
     pub tokens: Pubkey,
     pub endpoint_program: Pubkey,
     pub bump: u8,

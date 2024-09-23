@@ -47,3 +47,4 @@ pub fn encode(action: RequestAction) -> Result<Vec<u8>> {
 
     Ok(encoded)
 }
+

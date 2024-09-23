@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import {Program, web3} from "@coral-xyz/anchor";
 import { LstRestaking } from "../../../target/types/lst_restaking";
-import {getConfig, getPDATokenAccount, getTokenAccount, getTokenWhiteList, testKeys} from "../../utils";
+import {getConfig, getPDATokenAccount, getTokenAccount, getTokens, testKeys} from "../../utils";
 import {config} from "dotenv";
 import {assert} from "chai";
 import {TOKEN_PROGRAM_ID} from "@coral-xyz/anchor/dist/cjs/utils/token";
@@ -29,7 +29,7 @@ describe("solana-restaking", () => {
     it("Remove token from white list!", async () => {
         const [owner] = await testKeys();
         const [config] = await getConfig();
-        const [tokenWhiteList] = await getTokenWhiteList();
+        const [tokenWhiteList] = await getTokens();
 
 
         const mint = new web3.PublicKey(process.env.MINT_ADDRESS);

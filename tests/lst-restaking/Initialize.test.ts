@@ -1,7 +1,8 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program, web3 } from "@coral-xyz/anchor";
 import { LstRestaking } from "../../target/types/lst_restaking";
-import { IDL } from "../../target/types/endpoint";
+import { IDL as EndpointIdl } from "../../target/types/endpoint";
+import { IDL as LstRestakingIdl } from "../../target/types/lst_restaking";
 import {
   airdrop,
   eid,
@@ -17,7 +18,7 @@ import {
   getPendingNonce,
   getReceiveLibraryConfig,
   getSendLibraryConfig,
-  getTokenWhiteList,
+  getTokens,
   LST_RESTAKING_PROGRAM_ID,
   remoteEid,
   remoteOapp,
@@ -43,19 +44,31 @@ describe("solana-restaking", () => {
 
   anchor.setProvider(customProvider);
 
-  const program = anchor.workspace.LstRestaking as Program<LstRestaking>;
+  // const lst_program = anchor.workspace.LstRestaking as Program<LstRestaking>;
   // const endpoint_program = anchor.workspace.Endpoint as Program<Endpoint>;
 
-  const endpoint_program = new Program(IDL, ENDPOINT_PROGRAM_ID, provider);
+  const lst_program = new Program(LstRestakingIdl, LST_RESTAKING_PROGRAM_ID, provider);
+  const endpoint_program = new Program(EndpointIdl, ENDPOINT_PROGRAM_ID, provider);
 
   it("Is initialized!", async () => {
     const [owner, , , , , delegate] = await testKeys();
+
+
+    // const address = Buffer.from(
+    //     new web3.PublicKey("3DsgkXpd7Hwc6Q1iZ4YGLFrfSQZvotGSDGYRAvcDL53V").toBytes(),
+    //     0,
+    //     32
+    // ).toString("hex");
+    //
+    // console.log(`address: ${address}`);
+
+    // return;
 
     const [config] = await getConfig();
 
     const [OApp] = await getOApp();
 
-    const [tokenWhiteList] = await getTokenWhiteList();
+    const [tokens] = await getTokens();
 
     const [oappRegistry] = await getOAppRegistry(OApp);
 
@@ -83,10 +96,10 @@ describe("solana-restaking", () => {
 
     const conn = anchor.getProvider().connection as unknown as Connection;
 
-    // await airdrop(conn, owner.publicKey);
-    // await airdrop(conn, delegate.publicKey);
+    await airdrop(conn, owner.publicKey);
+    await airdrop(conn, delegate.publicKey);
 
-    const init_tx = await program.methods
+    const init_tx = await lst_program.methods
       .initialize({
         remoteEid: remoteEid,
         receiver: remoteOapp,
@@ -96,7 +109,8 @@ describe("solana-restaking", () => {
         config,
         messageList,
         lzReceiveTypes,
-        tokenWhiteList,
+        tokens,
+        operator: delegate.publicKey,
         delegate: delegate.publicKey,
         endpointProgram: ENDPOINT_PROGRAM_ID,
       })
@@ -206,7 +220,7 @@ describe("solana-restaking", () => {
       `defaultSendLibraryConfig: ${defaultSendLibraryConfigState.messageLib}`
     );
 
-    const configState = await program.account.config.fetch(config);
+    const configState = await lst_program.account.config.fetch(config);
 
     assert.equal(
       configState.owner.toString(),
@@ -214,7 +228,7 @@ describe("solana-restaking", () => {
       "Initialize failed"
     );
 
-    const lzReceiveTypesState = await program.account.lzReceiveTypes.fetch(
+    const lzReceiveTypesState = await lst_program.account.lzReceiveTypesAccount.fetch(
       lzReceiveTypes
     );
 

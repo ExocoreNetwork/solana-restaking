@@ -3,7 +3,7 @@ use anchor_spl::token_interface::Mint;
 use oapp::endpoint::program::Endpoint;
 
 use crate::errors::LstRestakingError;
-use crate::states::{Config, MessageList, MessageWithoutOperator, RequestAction, Tokens, Vault};
+use crate::states::{Config, Messages, MessageWithoutOperator, RequestAction, Tokens, Vault};
 use crate::utils::{encode, send};
 
 pub fn withdraw_principal_from_exocore(ctx: Context<WithdrawPrincipal>, params: WithdrawPrincipalParams) -> Result<()> {
@@ -32,7 +32,7 @@ pub fn withdraw_principal_from_exocore(ctx: Context<WithdrawPrincipal>, params: 
         params.opts.clone()
     )?;
 
-    let message_list = &mut ctx.accounts.message_list;
+    let message_list = &mut ctx.accounts.messages;
 
     message_list.pending(nonce,
                          RequestAction::WithdrawPrincipalFromExocore(
@@ -58,18 +58,18 @@ pub struct WithdrawPrincipal<'info> {
     vault: Box<Account<'info, Vault>>,
     #[account(
         mut,
-        realloc = message_list.get_size(),
+        realloc = messages.get_size(),
         realloc::payer = depositor,
         realloc::zero = false
     )]
-    message_list: Box<Account<'info, MessageList>>,
+    messages: Box<Account<'info, Messages>>,
     #[account(mut)]
     mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(
         mut,
         seeds = [Config::CONFIG_SEED_PREFIX],
         bump,
-        has_one = message_list @LstRestakingError::InvalidMessageList,
+        has_one = messages @LstRestakingError::InvalidMessageList,
         has_one = tokens @ LstRestakingError::InvalidTokens
     )]
     config: Box<Account<'info, Config>>,

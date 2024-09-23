@@ -19,6 +19,7 @@ export DEFAULT_SEND_CONFIG = "5ro8ELnyfCmD8UnBgJ1yuZ3qgQ16WzaxTqgZDBRJmFBb"
 
 export LST_RESTAKING_PROGRAM_ID = "3DsgkXpd7Hwc6Q1iZ4YGLFrfSQZvotGSDGYRAvcDL53V"
 export LST_RESTAKING_PROGRAM_PATH = "target/deploy/lst_restaking.so"
+export LST_RESTAKING_BUFFER = "9ShJGWndAqRsBcd4trUJktk4YCnGhCHgq73Z4NhHcf8Y"
 
 export ENDPOINT_NAME = "Endpoint.so"
 export ULN302_NAME = "uln302.so"
@@ -92,7 +93,7 @@ upgrade-lst:
 	anchor upgrade --program-id ${LST_RESTAKING_PROGRAM_ID} ${LST_RESTAKING_PROGRAM_PATH} --provider.wallet .keys/dev.json
 
 upgrade-lst2:
-	solana program deploy --buffer ${LST_RESTAKING_BUFFER} --program-id ${LST_RESTAKING_PROGRAM_ID} ${LST_RESTAKING_PROGRAM_PATH} --upgrade-authority .keys/dev.json
+	solana program deploy  --upgrade-authority .keys/dev.json --buffer ${LST_RESTAKING_BUFFER} --program-id ${LST_RESTAKING_PROGRAM_ID} ${LST_RESTAKING_PROGRAM_PATH}
 
 
 build:

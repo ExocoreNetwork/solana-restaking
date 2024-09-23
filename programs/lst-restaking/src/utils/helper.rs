@@ -5,7 +5,7 @@ use anchor_spl::token_2022::{initialize_account3, InitializeAccount3, spl_token_
 use anchor_spl::token_2022::spl_token_2022::extension::{BaseStateWithExtensions, ExtensionType, StateWithExtensions};
 use oapp::endpoint::instructions::SendParams;
 use oapp::endpoint_cpi;
-use crate::{RECEIVER, remote_eid};
+use crate::{id, RECEIVER, remote_eid};
 use crate::states::Config;
 
 pub fn create_token_account<'a>(
@@ -75,4 +75,10 @@ pub(crate) fn send(endpoint: Pubkey, sender: Pubkey, accounts: &[AccountInfo], b
     )?;
 
     Ok(result.nonce)
+}
+
+pub fn get_pda(seeds: &[&[u8]]) -> Pubkey {
+    let (key, _) = Pubkey::find_program_address(seeds, &id());
+
+    key
 }

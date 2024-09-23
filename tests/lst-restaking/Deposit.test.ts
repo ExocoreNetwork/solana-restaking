@@ -7,7 +7,7 @@ import {
     ENDPOINT_PROGRAM_ID,
     getConfig,
     getPDATokenAccount,
-    getTokenAccount, getTokenWhiteList,
+    getTokenAccount, getTokens,
     getVault,
     sendRemainingAccounts,
     testKeys,
@@ -47,8 +47,7 @@ describe("solana-restaking", () => {
         const [config] = await getConfig();
 
         const [vault] = await getVault(mint, user.publicKey);
-        const [tokenWhiteList] = await getTokenWhiteList();
-
+        const [tokens] = await getTokens();
 
         const poolTokenAccount = await getPDATokenAccount(mint, config);
 
@@ -85,7 +84,7 @@ describe("solana-restaking", () => {
                 config,
                 depositorTokenAccount: userTokenAccount,
                 poolTokenAccount,
-                tokenWhiteList,
+                tokens,
                 tokenProgram: TOKEN_PROGRAM_ID,
                 endpointProgram: ENDPOINT_PROGRAM_ID
             })

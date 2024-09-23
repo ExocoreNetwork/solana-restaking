@@ -101,7 +101,7 @@ export async function getOApp(): Promise<[PublicKey, number]> {
     return [address, bump]
 }
 
-export async function getTokenWhiteList(): Promise<[PublicKey, number]> {
+export async function getTokens(): Promise<[PublicKey, number]> {
     const [address, bump] = PublicKey.findProgramAddressSync(
         [LST_RESTAKING_TOKEN_WHITE_LIST],
         LST_RESTAKING_PROGRAM_ID

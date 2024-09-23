@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface, transfer_checked, TransferChecked};
 use crate::errors::LstRestakingError;
-use crate::states::{Config, Vault, MessageList, Tokens};
+use crate::states::{Config, Vault, Messages, Tokens};
 
 pub fn claim(ctx: Context<Claim>, amount_in: u64) -> Result<()> {
     // validate mint
@@ -50,10 +50,10 @@ pub struct Claim<'info> {
     vault: Account<'info, Vault>,
     #[account(
         mut,
-        seeds = [MessageList::MESSAGE_SEED_PREFIX, config.key().as_ref()] ,
+        seeds = [Messages::MESSAGE_SEED_PREFIX, config.key().as_ref()] ,
         bump
     )]
-    message: Account<'info, MessageList>,
+    message: Account<'info, Messages>,
     #[account(mut)]
     mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(

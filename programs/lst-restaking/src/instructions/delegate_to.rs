@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::Mint;
 use oapp::endpoint::program::Endpoint;
-use crate::states::{Config, MessageList, MessageWithOperator, RequestAction, Tokens, Vault};
+use crate::states::{Config, MessageWithOperator, RequestAction, Tokens, Vault};
 use crate::utils::{encode, send};
 use crate::errors::LstRestakingError;
 
@@ -46,12 +46,6 @@ pub struct DelegateTo<'info> {
         bump
     )]
     vault: Account<'info, Vault>,
-    #[account(
-        mut,
-        seeds = [MessageList::MESSAGE_SEED_PREFIX, config.key().as_ref()] ,
-        bump
-    )]
-    message_list: Account<'info, MessageList>,
     #[account(mut)]
     mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(

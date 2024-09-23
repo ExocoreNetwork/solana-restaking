@@ -46,6 +46,7 @@ pub fn deposit(ctx: Context<Deposit>, params: DepositParams) -> Result<()> {
         }
     ))?;
 
+
     msg!("message: {:?}", message);
 
     let _ = send(
@@ -93,6 +94,7 @@ pub struct Deposit<'info> {
         token::authority = config
     )]
     pool_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+    #[account(mut)]
     tokens: Box<Account<'info, Tokens>>,
     token_program: Interface<'info, TokenInterface>,
     endpoint_program: Program<'info, Endpoint>,
