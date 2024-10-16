@@ -1,44 +1,8 @@
-use crate::states::{Config, LzReceiveTypesAccount, Messages, Tokens};
 use anchor_lang::prelude::*;
+use crate::states::{Config, LzReceiveTypesAccount, Messages, Tokens};
 use oapp::endpoint::instructions::RegisterOAppParams;
 use oapp::endpoint::program::Endpoint;
 use oapp::endpoint_cpi;
-
-pub fn initialize(ctx: Context<InitConfig>, params: InitConfigParams) -> Result<()> {
-    let config = &mut ctx.accounts.config;
-    config.owner = ctx.accounts.owner.key();
-    config.pending_owner = ctx.accounts.owner.key();
-
-    config.remote_eid = params.remote_eid;
-    config.receiver = params.receiver;
-    config.messages = ctx.accounts.messages.key();
-    config.tokens = ctx.accounts.tokens.key();
-    config.endpoint_program = ctx.accounts.endpoint_program.key();
-    config.operator = ctx.accounts.operator.key();
-
-    config.bump = ctx.bumps.config;
-
-    msg!("receiver: {:?}", config.receiver);
-
-    ctx.accounts.lz_receive_types.config = config.key();
-
-    let signer = &[Config::CONFIG_SEED_PREFIX, &[ctx.bumps.config][..]];
-
-    endpoint_cpi::register_oapp(
-        ctx.accounts.endpoint_program.key(),
-        ctx.accounts.config.key(),
-        ctx.remaining_accounts,
-        signer,
-        RegisterOAppParams {
-            delegate: ctx.accounts.delegate.key(),
-        },
-    )?;
-
-    msg!("Successful to initialize config");
-
-    Ok(())
-}
-
 #[derive(Accounts)]
 pub struct InitConfig<'info> {
     #[account(mut)]
@@ -81,8 +45,46 @@ pub struct InitConfig<'info> {
     system_program: Program<'info, System>,
 }
 
+impl InitConfig<'_> {
+    pub fn apply(ctx: &mut Context<InitConfig>, params: &InitConfigParams) -> Result<()> {
+        let config = &mut ctx.accounts.config;
+        config.owner = ctx.accounts.owner.key();
+        config.pending_owner = ctx.accounts.owner.key();
+
+        config.eid = params.dst_eid;
+        config.receiver = params.receiver;
+        config.messages = ctx.accounts.messages.key();
+        config.tokens = ctx.accounts.tokens.key();
+        config.endpoint_program = ctx.accounts.endpoint_program.key();
+        config.operator = ctx.accounts.operator.key();
+
+        config.bump = ctx.bumps.config;
+
+        msg!("receiver: {:?}", config.receiver);
+
+        ctx.accounts.lz_receive_types.config = config.key();
+        ctx.accounts.lz_receive_types.messages = ctx.accounts.messages.key();
+
+        let signer = &[Config::CONFIG_SEED_PREFIX, &[ctx.bumps.config][..]];
+
+        endpoint_cpi::register_oapp(
+            ctx.accounts.endpoint_program.key(),
+            ctx.accounts.config.key(),
+            ctx.remaining_accounts,
+            signer,
+            RegisterOAppParams {
+                delegate: ctx.accounts.delegate.key(),
+            },
+        )?;
+
+        msg!("Successful to initialize config");
+
+        Ok(())
+    }
+}
+
 #[derive(Clone, AnchorSerialize, AnchorDeserialize)]
 pub struct InitConfigParams {
-    remote_eid: u32,
+    dst_eid: u32,
     receiver: [u8; 32]
 }

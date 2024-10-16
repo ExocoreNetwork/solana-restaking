@@ -51,7 +51,9 @@ pub fn deposit_then_delegate_to(ctx: Context<DepositThenDelegateTo>, params: Dep
         ctx.remaining_accounts,
         ctx.bumps.config,
         message,
-        params.opts.clone()
+        params.opts.clone(),
+        ctx.accounts.config.eid,
+        ctx.accounts.config.receiver
     )?;
 
     Ok(())

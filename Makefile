@@ -17,15 +17,17 @@ export DVN_CONFIG = "4VDjp6XQaxoZf5RGwiPU9NR1EXSZn2TP4ATMmiSzLfhb"
 export DEFAULT_SEND_LIBRARY_CONFIG = "gU5rYi3eVPqFJzUgths7ZHxmbfQh2j3KQX3Mg7vR6sr"
 export DEFAULT_SEND_CONFIG = "5ro8ELnyfCmD8UnBgJ1yuZ3qgQ16WzaxTqgZDBRJmFBb"
 
-export LST_RESTAKING_PROGRAM_ID = "3DsgkXpd7Hwc6Q1iZ4YGLFrfSQZvotGSDGYRAvcDL53V"
+export LST_RESTAKING_PROGRAM_ID = "4zfL13ounan3Uaa5TiUDphxTnYVvaVDLTPNvkRgpbdSM"
 export LST_RESTAKING_PROGRAM_PATH = "target/deploy/lst_restaking.so"
-export LST_RESTAKING_BUFFER = "9ShJGWndAqRsBcd4trUJktk4YCnGhCHgq73Z4NhHcf8Y"
+export LST_RESTAKING_BUFFER = "AeXwfLVnMCERxYD6YhTg6tywEBfK4QovKV2QLXW3M327"
 
 export ENDPOINT_NAME = "Endpoint.so"
 export ULN302_NAME = "uln302.so"
 export EXECUTOR_NAME = "Executor.so"
 export PRICE_FEED_NAME = "PriceFeed.so"
 export DVN_NAME = "dvn.so"
+
+export DEV = "EJbgFHTBrqkX44bV7HTJzu7LcZ94PYMVZuT4podPA6jK"
 
 .PHONY: local_validator deploy test
 
@@ -72,11 +74,12 @@ local_validator: set-localnet
 	--clone ${DVN_CONFIG} \
 	--clone ${DEFAULT_SEND_LIBRARY_CONFIG} \
 	--clone ${DEFAULT_SEND_CONFIG} \
+	--clone ${DEV} \
 	--url "https://api.devnet.solana.com" \
 	--ledger .anchor/test-ledger/ --reset
 
 setup0:
-	solana-install init 1.17.31
+	solana-install init 1.17.34
 
 setup1:
 	avm use 0.29.0
@@ -87,7 +90,8 @@ build0: setup
 	anchor build
 
 deploy-lst:
-	anchor deploy --program-name lst-restaking --provider.wallet .keys/dev.json # --provider.cluster "https://devnet.helius-rpc.com/?api-key=975e42bc-9bb2-4aa3-9fd5-7a8a10719df6"
+	anchor deploy --program-name lst-restaking  # --provider.wallet .keys/dev.json --provider.cluster "https://solana-devnet.g.alchemy.com/v2/aX4Snr1_FQhgbX_QtH-PapYe1_VRTfQZ"
+# solana program deploy --program-id target/deploy/lst_restaking-keypair.json --buffer GoQ82xWX3Tqmkj4LN9jJoD8JJPnmuukgzi7jU2ToDNvB --upgrade-authority .keys/dev.json target/deploy/lst_restaking.so
 
 upgrade-lst:
 	anchor upgrade --program-id ${LST_RESTAKING_PROGRAM_ID} ${LST_RESTAKING_PROGRAM_PATH} --provider.wallet .keys/dev.json

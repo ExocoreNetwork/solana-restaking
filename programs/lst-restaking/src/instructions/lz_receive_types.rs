@@ -1,8 +1,9 @@
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::get_associated_token_address;
 use anchor_spl::token::spl_token;
+use anchor_spl::token_2022::spl_token_2022;
 use oapp::endpoint_cpi::LzAccount;
-use crate::states::{Config, Messages, RequestAction, Tokens, Vault};
+use crate::states::{Config, Messages, RequestAction, Vault};
 use crate::utils::{ get_pda};
 use oapp::LzReceiveParams;
 use solana_program::system_program;
@@ -29,58 +30,61 @@ pub fn lz_receive_types(ctx: Context<LzReceiveTypes>, params: LzReceiveParams) -
         LzAccount { pubkey: get_pda(&[Config::CONFIG_SEED_PREFIX]), is_signer: false, is_writable: true},
     ];
 
-    let messages = &ctx.accounts.messages;
+    let messages_account_info = ctx.accounts.messages.to_account_info();
     let action = u8::try_from_slice(&params.message[..1])?;
-    match action {
-        10 => {
-            let nonce = u64::try_from_slice(&params.message[1..9])?;
-            if let Some(action) = messages.action(nonce) {
-                match action {
-                    RequestAction::WithdrawPrincipalFromExocore(content) |
-                    RequestAction::WithdrawRewardFromExocore(content)
-                    => {
-                        accounts.extend(
-                            vec![
-                                // messages
-                                LzAccount { pubkey: messages.key(), is_signer: true, is_writable: true },
-                                // sender
-                                LzAccount { pubkey: content.sender, is_signer: false, is_writable: false },
-                                // mint
-                                LzAccount { pubkey: content.mint, is_signer: false, is_writable: false },
-                                // user vault
-                                LzAccount { pubkey: get_pda(&[Vault::SEED_PREFIX, content.mint.as_ref(), content.sender.as_ref()]), is_signer: false, is_writable: true },
-                                // system program
-                                LzAccount { pubkey: system_program::id(), is_signer: false, is_writable: false },
-                            ]
-                        );
-                    }
-                    _  => {
-                        msg!("Not a respond of withdrawal")
-                    }
-                }
-            }
-        }
-        7 => {
-            let mint = Pubkey::try_from_slice(&params.message[1..33])?;
-            accounts.extend(
-                vec![
-                    // tokens
-                    LzAccount { pubkey: get_pda(&[Tokens::SEED]), is_signer: false, is_writable: true},
-                    // mint
-                    LzAccount { pubkey: mint, is_signer: false, is_writable: false },
-                    // pool token ata
-                    LzAccount { pubkey: get_associated_token_address(&config.key(), &mint), is_signer: true, is_writable: true},
-                    // token program
-                    LzAccount { pubkey: spl_token::id(), is_signer: false, is_writable: false},
-                    // system
-                    LzAccount { pubkey: system_program::id(), is_signer: false, is_writable: false},
-                ]
-            )
-        }
-        _ => {
-            msg!("Not a required processed response")
-        }
-    }
+
+    // match action {
+    //     12 => {
+    //         let nonce = u64::try_from_slice(&params.message[1..9])?;
+    //         let messages = Messages::try_from_slice(&messages_account_info.try_borrow_data()?)?;
+    //         if let Some(action) = messages.action(nonce) {
+    //             match action {
+    //                 RequestAction::WithdrawLst(content)
+    //                 => {
+    //                     accounts.extend(
+    //                         vec![
+    //                             // messages
+    //                             LzAccount { pubkey: config.messages, is_signer: true, is_writable: true },
+    //                             // sender
+    //                             LzAccount { pubkey: content.sender, is_signer: false, is_writable: false },
+    //                             // mint
+    //                             LzAccount { pubkey: content.mint, is_signer: false, is_writable: false },
+    //                             // user vault
+    //                             LzAccount { pubkey: get_pda(&[Vault::SEED_PREFIX, content.mint.as_ref(), content.sender.as_ref()]), is_signer: false, is_writable: true },
+    //                             // system program
+    //                             LzAccount { pubkey: system_program::id(), is_signer: false, is_writable: false },
+    //                         ]
+    //                     );
+    //                 }
+    //                 _  => {
+    //                     msg!("Not a respond of withdrawal")
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     9 => {
+    //         let mint = Pubkey::try_from_slice(&params.message[1..33])?;
+    //         accounts.extend(
+    //             vec![
+    //                 // tokens
+    //                 LzAccount { pubkey: config.tokens, is_signer: false, is_writable: true},
+    //                 // mint
+    //                 LzAccount { pubkey: mint, is_signer: false, is_writable: false },
+    //                 // pool token ata
+    //                 LzAccount { pubkey: get_associated_token_address(&config.key(), &mint), is_signer: true, is_writable: true},
+    //                 // token program
+    //                 LzAccount { pubkey: spl_token::id(), is_signer: false, is_writable: false},
+    //
+    //                 LzAccount { pubkey: spl_token_2022::id(), is_signer: false, is_writable: false},
+    //                 // system
+    //                 LzAccount { pubkey: system_program::id(), is_signer: false, is_writable: false},
+    //             ]
+    //         )
+    //     }
+    //     _ => {
+    //         msg!("Not a required processed response")
+    //     }
+    // }
 
     let endpoint_program = ctx.accounts.config.endpoint_program;
     // remaining accounts 0..9
@@ -110,8 +114,8 @@ pub struct LzReceiveTypes<'info> {
         address = config.messages
     )]
     messages: Box<Account<'info, Messages>>,
-    #[account(
-        address = config.tokens
-    )]
-    tokens: Box<Account<'info, Tokens>>
+    // #[account(
+    //     address = config.tokens
+    // )]
+    // tokens: Box<Account<'info, Tokens>>
 }

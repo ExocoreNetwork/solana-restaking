@@ -1,19 +1,36 @@
 use anchor_lang::prelude::*;
 use std::mem;
 
+//     REQUEST_DEPOSIT_LST,
+//     REQUEST_DEPOSIT_NST,
+//     REQUEST_WITHDRAW_LST,
+//     REQUEST_WITHDRAW_NST,
+//     REQUEST_CLAIM_REWARD,
+//     REQUEST_DELEGATE_TO,
+//     REQUEST_UNDELEGATE_FROM,
+//     REQUEST_DEPOSIT_THEN_DELEGATE_TO,
+//     REQUEST_MARK_BOOTSTRAP,
+//     REQUEST_ADD_WHITELIST_TOKEN,
+//     REQUEST_ASSOCIATE_OPERATOR,
+//     REQUEST_DISSOCIATE_OPERATOR,
+//     RESPOND
+
+#[repr(u32)]
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]
 pub enum RequestAction {
-    Deposit(MessageWithoutOperator),
-    WithdrawPrincipalFromExocore(MessageWithoutOperator),
-    WithdrawRewardFromExocore(MessageWithoutOperator),
-    DelegateTo(MessageWithOperator),
-    UndelegateFrom(MessageWithOperator),
-    DepositThenDelegateTo(MessageWithOperator),
-    _RequestMarkBootstrap,
-    AddWhiteListToken,
-    _RequestAssociateOperator,
-    _RequestDissociateOperator,
-    Respond(RespondMessage),
+    DepositLst(MessageWithoutOperator), // 0
+    DepositNst(MessageWithoutOperator), // 1
+    WithdrawLst(MessageWithoutOperator), // 2
+    WithdrawNst(MessageWithoutOperator), // 3
+    ClaimReward(MessageWithoutOperator), // 4
+    DelegateTo(MessageWithOperator), // 5
+    UndelegateFrom(MessageWithOperator), // 6
+    DepositThenDelegateTo(MessageWithOperator), // 7
+    _RequestMarkBootstrap, // 8
+    AddWhiteListToken, // 9
+    _RequestAssociateOperator, // 10
+    _RequestDissociateOperator, // 11
+    Respond(RespondMessage), // 12
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]
@@ -40,7 +57,7 @@ pub struct RespondMessage {
 #[account]
 #[derive(InitSpace)]
 pub struct Messages {
-    #[max_len(0)]
+    #[max_len(10)]
     data: Vec<Message>,
 }
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]
@@ -50,7 +67,7 @@ pub struct Message {
 }
 
 impl Messages {
-    pub const MESSAGE_SEED_PREFIX: &'static [u8] = b"messages";
+    pub const MESSAGE_SEED_PREFIX: &'static [u8] = b"message-list";
 
     pub fn pending(&mut self, nonce: u64, action: RequestAction) -> Result<()> {
         self.data.push(Message { nonce, action });

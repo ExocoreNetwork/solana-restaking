@@ -5,7 +5,7 @@ use anchor_spl::token_2022::{initialize_account3, InitializeAccount3, spl_token_
 use anchor_spl::token_2022::spl_token_2022::extension::{BaseStateWithExtensions, ExtensionType, StateWithExtensions};
 use oapp::endpoint::instructions::SendParams;
 use oapp::endpoint_cpi;
-use crate::{id, RECEIVER, remote_eid};
+use crate::{id};
 use crate::states::Config;
 
 pub fn create_token_account<'a>(
@@ -55,7 +55,7 @@ pub fn create_token_account<'a>(
     ))
 }
 
-pub(crate) fn send(endpoint: Pubkey, sender: Pubkey, accounts: &[AccountInfo], bump: u8, message: Vec<u8>, opts: Vec<u8>) -> Result<u64> {
+pub(crate) fn send(endpoint: Pubkey, sender: Pubkey, accounts: &[AccountInfo], bump: u8, message: Vec<u8>, opts: Vec<u8>, dst_eid: u32, address: [u8;32]) -> Result<u64> {
 
     let signer = &[Config::CONFIG_SEED_PREFIX, &[bump][..]];
 
@@ -65,8 +65,8 @@ pub(crate) fn send(endpoint: Pubkey, sender: Pubkey, accounts: &[AccountInfo], b
         accounts,
         signer,
         SendParams {
-            dst_eid: remote_eid(),
-            receiver: RECEIVER,
+            dst_eid,
+            receiver: address,
             message,
             options: opts.clone(),
             native_fee: 500_000,

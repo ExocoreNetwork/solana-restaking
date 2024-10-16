@@ -15,7 +15,7 @@ pub fn withdraw_principal_from_exocore(ctx: Context<WithdrawPrincipal>, params: 
 
     require!(token_white_list.validate_mint(mint)?, LstRestakingError::NotSupportMint);
 
-    let message = encode(RequestAction::WithdrawPrincipalFromExocore(
+    let message = encode(RequestAction::WithdrawLst(
         MessageWithoutOperator {
             mint: ctx.accounts.mint.key(),
             sender: ctx.accounts.depositor.key(),
@@ -29,13 +29,15 @@ pub fn withdraw_principal_from_exocore(ctx: Context<WithdrawPrincipal>, params: 
         ctx.remaining_accounts,
         ctx.bumps.config,
         message,
-        params.opts.clone()
+        params.opts.clone(),
+        ctx.accounts.config.eid,
+        ctx.accounts.config.receiver
     )?;
 
     let message_list = &mut ctx.accounts.messages;
 
     message_list.pending(nonce,
-                         RequestAction::WithdrawPrincipalFromExocore(
+                         RequestAction::ClaimReward(
                              MessageWithoutOperator {
                                  mint: ctx.accounts.mint.key(),
                                  sender: ctx.accounts.depositor.key(),

@@ -6,8 +6,17 @@
   "dependencies": {
     "@coral-xyz/anchor": "^0.29.0",
     "@coral-xyz/spl-token": "^0.29.0",
-    "@layerzerolabs/lz-solana-sdk-v2": "^2.3.38",
+    "@layerzerolabs/devtools-solana": "~0.1.6",
+    "@layerzerolabs/eslint-config-next": "~2.3.34",
+    "@layerzerolabs/io-devtools": "~0.1.11",
+    "@layerzerolabs/lz-definitions": "^2.3.34",
+    "@layerzerolabs/lz-solana-sdk-v2": "^2.3.31",
+    "@layerzerolabs/lz-v2-utilities": "^2.3.34",
+    "@layerzerolabs/protocol-devtools": "^0.4.2",
+    "@layerzerolabs/protocol-devtools-solana": "^1.0.5",
+    "@layerzerolabs/solhint-config": "^2.3.34",
     "@solana/spl-token": "^0.4.6",
+    "@ethersproject/bytes": "^5.7.0",
     "dotenv": "^16.4.5"
   },
   "devDependencies": {

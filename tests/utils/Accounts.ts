@@ -32,17 +32,17 @@ import {PublicKey} from "@solana/web3.js";
 export const sendRemainingAccounts = async (user: PublicKey) => {
     const [OApp] = await getOApp();
 
-    const [nonce] = await getNonce(OApp, remoteEid, remoteOapp);
+    const [nonce] = await getNonce(OApp);
 
-    const [defaultSendLibraryConfig] = await getDefaultSendLibraryConfig(remoteEid);
+    const [defaultSendLibraryConfig] = await getDefaultSendLibraryConfig();
 
-    const [sendLibraryConfig] = await getSendLibraryConfig(OApp, remoteEid);
+    const [sendLibraryConfig] = await getSendLibraryConfig(OApp);
 
-    const [sendConfig] = await getSendConfig(OApp, remoteEid);
+    const [sendConfig] = await getSendConfig(OApp);
 
-    const [defaultSendConfig] = await getDefaultSendConfig(remoteEid);
+    const [defaultSendConfig] = await getDefaultSendConfig();
 
-    const accounts = [
+    return [
         // endpoint program 0
         {
             isSigner: false,
@@ -200,6 +200,4 @@ export const sendRemainingAccounts = async (user: PublicKey) => {
             pubkey: PRICE_FEED_CONFIG
         }
     ];
-
-    return accounts;
 }

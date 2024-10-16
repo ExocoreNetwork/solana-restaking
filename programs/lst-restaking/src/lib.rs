@@ -1,34 +1,28 @@
-use anchor_lang::prelude::*;
-use oapp::endpoint_cpi::LzAccount;
-use oapp::LzReceiveParams;
-
-use instructions::*;
-use states::*;
-
 mod errors;
 mod instructions;
 mod states;
 mod utils;
 
-declare_id!("3DsgkXpd7Hwc6Q1iZ4YGLFrfSQZvotGSDGYRAvcDL53V");
 
-pub const RECEIVER: [u8; 32] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 83, 57, 150, 221, 221, 22, 126, 255, 122, 45, 159, 245, 136, 140, 70, 136, 245, 23, 248, 224];
+use anchor_lang::prelude::*;
+use oapp::endpoint_cpi::LzAccount;
+use oapp::LzReceiveParams;
+use instructions::*;
+use states::*;
 
-pub const SRC_EID: u32 = 40168;
 
-pub const fn remote_eid() -> u32 {
-    if cfg!(feature = "main") {
-        return 40259;
-    }
-    40259
-}
 
+declare_id!("4zfL13ounan3Uaa5TiUDphxTnYVvaVDLTPNvkRgpbdSM");
 #[program]
 pub mod lst_restaking {
     use super::*;
 
-    pub fn initialize(ctx: Context<InitConfig>, params: InitConfigParams) -> Result<()> {
-        instructions::initialize(ctx, params)
+    pub fn init_config(mut ctx: Context<InitConfig>, params: InitConfigParams) -> Result<()> {
+        InitConfig::apply(&mut ctx, &params)
+    }
+
+    pub fn set_remote(mut ctx: Context<SetRemote>, params: SetRemoteParams) -> Result<()> {
+        SetRemote::apply(&mut ctx, &params)
     }
 
     pub fn transfer_ownership(ctx: Context<TransferOwnership>) -> Result<()> {

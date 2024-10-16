@@ -1,7 +1,13 @@
 import * as anchor from "@coral-xyz/anchor";
 
 import { PublicKey } from "@solana/web3.js";
-import {LST_RESTAKING_PROGRAM_ID, ENDPOINT_PROGRAM_ID, ULN302_PROGRAM_ID, EXECUTOR_PROGRAM_ID} from "./Consts";
+import {
+    LST_RESTAKING_PROGRAM_ID,
+    ENDPOINT_PROGRAM_ID,
+    ULN302_PROGRAM_ID,
+    EXECUTOR_PROGRAM_ID,
+    remoteEid, remoteOapp
+} from "./Consts";
 import BN from "bn.js";
 import {TOKEN_PROGRAM_ID} from "@coral-xyz/anchor/dist/cjs/utils/token";
 import {getAssociatedTokenAddressSync} from "@solana/spl-token";
@@ -57,6 +63,10 @@ const SEND_CONFIG_SEED= Buffer.from(
     anchor.utils.bytes.utf8.encode("SendConfig")
 );
 
+const RECEIVE_CONFIG_SEED= Buffer.from(
+    anchor.utils.bytes.utf8.encode("ReceiveConfig")
+);
+
 const LZ_RECEIVE_TYPES_SEED= Buffer.from(
     anchor.utils.bytes.utf8.encode("LzReceiveTypes")
 );
@@ -69,7 +79,7 @@ export async function getConfig(): Promise<[PublicKey, number]> {
   return [address, bump];
 }
 
-export async function getMessageList(config: PublicKey): Promise<[PublicKey, number]> {
+export async function getMessages(config: PublicKey): Promise<[PublicKey, number]> {
     const [address, bump] = PublicKey.findProgramAddressSync(
         [LST_RESTAKING_MESSAGE_LIST_PREFIX, config.toBuffer()],
         LST_RESTAKING_PROGRAM_ID
@@ -134,9 +144,12 @@ export async function getOAppRegistry(localOApp: PublicKey): Promise<[PublicKey,
   return [address, bump]
 }
 
-export async function getMessageLibInfo(lib: PublicKey): Promise<[PublicKey, number]> {
+
+
+export async function getMessageLibInfo(): Promise<[PublicKey, number]> {
+    const [newMessageLib] = await getMessageLib();
     const [address, bump] = PublicKey.findProgramAddressSync(
-        [MESSAGE_LIB_SEEDS, lib.toBuffer()],
+        [MESSAGE_LIB_SEEDS, newMessageLib.toBuffer()],
         ENDPOINT_PROGRAM_ID
     );
 
@@ -144,24 +157,14 @@ export async function getMessageLibInfo(lib: PublicKey): Promise<[PublicKey, num
     return [address, bump]
 }
 
-export async function getNonce(localOApp: PublicKey, remoteEid: number, remoteOApp: number[]): Promise<[PublicKey, number]> {
-  const localOAppBytes = localOApp.toBuffer();
-
-  // const remoteEidBytes = Buffer.alloc(4);
-  // remoteEidBytes.writeUInt32BE(remoteEid);
-
-    const eid = new BN(remoteEid);
-
-  if (remoteOApp.length !== 32) {
-    throw new Error("remoteOApp must be exactly 32 bytes");
-  }
-
+// ok
+export async function getNonce(localOApp: PublicKey): Promise<[PublicKey, number]> {
   const [address, bump] = PublicKey.findProgramAddressSync(
       [
         NONCE_SEEDS,
-        localOAppBytes,
-        eid.toBuffer("be", 4),
-        Buffer.from(remoteOApp),
+        localOApp.toBuffer(),
+        new BN(remoteEid).toBuffer("be", 4),
+        Buffer.from(remoteOapp),
       ],
       ENDPOINT_PROGRAM_ID
   );
@@ -170,22 +173,14 @@ export async function getNonce(localOApp: PublicKey, remoteEid: number, remoteOA
   return [address, bump];
 }
 
-export async function getPendingNonce(localOApp: PublicKey, remoteEid: number, remoteOApp: number[]): Promise<[PublicKey, number]> {
-  const localOAppBytes = localOApp.toBuffer();
-
-  const remoteEidBytes = Buffer.alloc(4);
-  remoteEidBytes.writeUInt32BE(remoteEid);
-
-  if (remoteOApp.length !== 32) {
-    throw new Error("remoteOApp must be exactly 32 bytes");
-  }
+export async function getPendingNonce(localOApp: PublicKey): Promise<[PublicKey, number]> {
 
   const [address, bump] = PublicKey.findProgramAddressSync(
       [
         PENDING_NONCE_SEEDS,
-        localOAppBytes,
-        remoteEidBytes,
-        Buffer.from(remoteOApp),
+        localOApp.toBuffer(),
+        new BN(remoteEid).toBuffer("be", 4),
+        Buffer.from(remoteOapp),
       ],
       ENDPOINT_PROGRAM_ID
   );
@@ -194,15 +189,30 @@ export async function getPendingNonce(localOApp: PublicKey, remoteEid: number, r
   return [address, bump];
 }
 
-export async function getSendLibraryConfig(sender: PublicKey, eid: number): Promise<[PublicKey, number]> {
-    const eidBytes = Buffer.alloc(4);
-    eidBytes.writeUInt32BE(eid);
+export async function getPayload(localOApp: PublicKey, nonce: number): Promise<[PublicKey, number]> {
+    const [address, bump] = PublicKey.findProgramAddressSync(
+        [
+            NONCE_SEEDS,
+            localOApp.toBuffer(),
+            new BN(remoteEid).toBuffer("be", 4),
+            Buffer.from(remoteOapp),
+            (new BN(nonce)).toBuffer("be", 8)
 
+        ],
+        ENDPOINT_PROGRAM_ID
+    );
+
+    console.log(`Payload: ${address}`);
+
+    return [address, bump];
+}
+
+export async function getSendLibraryConfig(sender: PublicKey): Promise<[PublicKey, number]> {
     const [address, bump] = PublicKey.findProgramAddressSync(
         [
             SEND_LIBRARY_CONFIG,
             sender.toBuffer(),
-            eidBytes,
+            new BN(remoteEid).toBuffer("be", 4),
         ],
         ENDPOINT_PROGRAM_ID
     );
@@ -211,14 +221,11 @@ export async function getSendLibraryConfig(sender: PublicKey, eid: number): Prom
     return [address, bump];
 }
 
-export async function getDefaultSendLibraryConfig(eid: number): Promise<[PublicKey, number]> {
-    const eidBytes = Buffer.alloc(4);
-    eidBytes.writeUInt32BE(eid);
-
+export async function getDefaultSendLibraryConfig(): Promise<[PublicKey, number]> {
     const [address, bump] = PublicKey.findProgramAddressSync(
         [
             SEND_LIBRARY_CONFIG,
-            eidBytes,
+            new BN(remoteEid).toBuffer("be", 4),
         ],
         ENDPOINT_PROGRAM_ID
     );
@@ -227,12 +234,12 @@ export async function getDefaultSendLibraryConfig(eid: number): Promise<[PublicK
     return [address, bump];
 }
 
-export async function getReceiveLibraryConfig(receiver: PublicKey, eid: number): Promise<[PublicKey, number]> {
+export async function getReceiveLibraryConfig(receiver: PublicKey): Promise<[PublicKey, number]> {
     const [address, bump] = PublicKey.findProgramAddressSync(
         [
             RECEIVE_LIBRARY_CONFIG,
             receiver.toBuffer(),
-            new BN(eid).toBuffer("be", 4),
+            new BN(remoteEid).toBuffer("be", 4),
         ],
         ENDPOINT_PROGRAM_ID
     );
@@ -241,23 +248,21 @@ export async function getReceiveLibraryConfig(receiver: PublicKey, eid: number):
     return [address, bump];
 }
 
-// export async function getLZReceiveTypes(OApp: PublicKey): Promise<[PublicKey, number]> {
-//     const [address, bump] = PublicKey.findProgramAddressSync(
-//         [LZ_RECEIVE_TYPES_SEED, OApp.toBuffer()],
-//         ENDPOINT_PROGRAM_ID
-//     );
-//
-//     console.log(`LZReceiveTypes: ${address}`);
-//
-//     return [address, bump]
-// }
-
 //////////////////////////////Uln program/////////////////////////////
-export async function getSendConfig(sender: PublicKey, dstEid: number): Promise<[PublicKey, number]> {
+export async function getMessageLib(): Promise<[PublicKey, number]> {
+    const [address, bump] = PublicKey.findProgramAddressSync(
+        [MESSAGE_LIB_SEEDS],
+        ULN302_PROGRAM_ID
+    );
+
+    console.log(`MessageLibInfoUln: ${address}`);
+    return [address, bump]
+}
+export async function getSendConfig(sender: PublicKey): Promise<[PublicKey, number]> {
     const [address, bump] = PublicKey.findProgramAddressSync(
         [
             SEND_CONFIG_SEED,
-            new BN(dstEid).toBuffer("be", 4),
+            new BN(remoteEid).toBuffer("be", 4),
             sender.toBuffer()
         ],
         ULN302_PROGRAM_ID
@@ -267,16 +272,43 @@ export async function getSendConfig(sender: PublicKey, dstEid: number): Promise<
     return [address, bump];
 }
 
-export async function getDefaultSendConfig(dstEid: number): Promise<[PublicKey, number]> {
+export async function getReceiveConfig(receiver: PublicKey): Promise<[PublicKey, number]> {
+    const [address, bump] = PublicKey.findProgramAddressSync(
+        [
+            RECEIVE_CONFIG_SEED,
+            new BN(remoteEid).toBuffer("be", 4),
+            receiver.toBuffer()
+        ],
+        ULN302_PROGRAM_ID
+    );
+
+    console.log(`receiveConfig: ${address}`);
+    return [address, bump];
+}
+
+export async function getDefaultSendConfig(): Promise<[PublicKey, number]> {
     const [address, bump] = PublicKey.findProgramAddressSync(
         [
             SEND_CONFIG_SEED,
-            new BN(dstEid).toBuffer("be", 4),
+            new BN(remoteEid).toBuffer("be", 4),
         ],
         ULN302_PROGRAM_ID
     );
 
     console.log(`DefaultSendConfig: ${address}`);
+    return [address, bump];
+}
+
+export async function getDefaultReceiveConfig(): Promise<[PublicKey, number]> {
+    const [address, bump] = PublicKey.findProgramAddressSync(
+        [
+            RECEIVE_CONFIG_SEED,
+            new BN(remoteEid).toBuffer("be", 4),
+        ],
+        ULN302_PROGRAM_ID
+    );
+
+    console.log(`DefaultReceiveConfig: ${address}`);
     return [address, bump];
 }
 

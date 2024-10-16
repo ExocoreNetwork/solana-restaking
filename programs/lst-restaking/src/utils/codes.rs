@@ -1,46 +1,39 @@
-use crate::RequestAction;
+use crate::*;
 use anchor_lang::prelude::*;
 
 pub fn encode(action: RequestAction) -> Result<Vec<u8>> {
     let mut encoded = Vec::new();
 
     match action {
-        RequestAction::Deposit(content) => {
+        RequestAction::DepositLst(content) => {
             encoded.push(0u8);
             encoded.extend_from_slice(&content.try_to_vec()?);
         }
-        RequestAction::WithdrawPrincipalFromExocore(content) => {
-            encoded.push(1u8);
-            encoded.extend_from_slice(&content.try_to_vec()?);
-        }
-        RequestAction::WithdrawRewardFromExocore(content) => {
+        RequestAction::WithdrawLst(content) => {
             encoded.push(2u8);
             encoded.extend_from_slice(&content.try_to_vec()?);
         }
-        RequestAction::DelegateTo(content) => {
-            encoded.push(3u8);
-            encoded.extend_from_slice(&content.try_to_vec()?);
-        }
-        RequestAction::UndelegateFrom(content) => {
+        RequestAction::ClaimReward(content) => {
             encoded.push(4u8);
             encoded.extend_from_slice(&content.try_to_vec()?);
         }
-        RequestAction::DepositThenDelegateTo(content) => {
+        RequestAction::DelegateTo(content) => {
             encoded.push(5u8);
             encoded.extend_from_slice(&content.try_to_vec()?);
         }
-        RequestAction::_RequestMarkBootstrap => {
+        RequestAction::UndelegateFrom(content) => {
             encoded.push(6u8);
+            encoded.extend_from_slice(&content.try_to_vec()?);
         }
-        RequestAction::AddWhiteListToken => {
+        RequestAction::DepositThenDelegateTo(content) => {
             encoded.push(7u8);
-            // encoded.extend_from_slice(&serialize(&content)?);
+            encoded.extend_from_slice(&content.try_to_vec()?);
         }
         RequestAction::_RequestAssociateOperator => {
-            encoded.push(8u8);
+            encoded.push(10u8);
         }
         RequestAction::_RequestDissociateOperator => {
-            encoded.push(9u8);
+            encoded.push(11u8);
         }
         _ => {}
     }

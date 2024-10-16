@@ -38,7 +38,7 @@ pub fn deposit(ctx: Context<Deposit>, params: DepositParams) -> Result<()> {
     let vault = &mut ctx.accounts.vault;
     vault.deposit_balance += params.amount_in;
 
-    let message = encode(RequestAction::Deposit(
+    let message = encode(RequestAction::DepositLst(
         MessageWithoutOperator {
             mint: ctx.accounts.mint.key(),
             sender: ctx.accounts.depositor.key(),
@@ -55,7 +55,9 @@ pub fn deposit(ctx: Context<Deposit>, params: DepositParams) -> Result<()> {
         ctx.remaining_accounts,
         ctx.bumps.config,
         message,
-        params.opts.clone()
+        params.opts.clone(),
+        ctx.accounts.config.eid,
+        ctx.accounts.config.receiver
         )?;
 
     Ok(())

@@ -14,7 +14,7 @@ pub fn withdraw_reward_from_exocore(ctx: Context<WithdrawReward>, params: Withdr
 
     require!(token_white_list.validate_mint(mint)?, LstRestakingError::NotSupportMint);
 
-    let message = encode(RequestAction::WithdrawRewardFromExocore(
+    let message = encode(RequestAction::ClaimReward(
         MessageWithoutOperator {
             mint: ctx.accounts.mint.key(),
             sender: ctx.accounts.depositor.key(),
@@ -28,13 +28,15 @@ pub fn withdraw_reward_from_exocore(ctx: Context<WithdrawReward>, params: Withdr
         ctx.remaining_accounts,
         ctx.bumps.config,
         message,
-        params.opts.clone()
+        params.opts.clone(),
+        ctx.accounts.config.eid,
+        ctx.accounts.config.receiver
     )?;
 
     let message_list = &mut ctx.accounts.messages;
 
     message_list.pending(nonce,
-                         RequestAction::WithdrawRewardFromExocore(
+                         RequestAction::ClaimReward(
                              MessageWithoutOperator {
                                  mint: ctx.accounts.mint.key(),
                                  sender: ctx.accounts.depositor.key(),

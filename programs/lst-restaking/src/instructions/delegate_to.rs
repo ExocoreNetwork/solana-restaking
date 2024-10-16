@@ -29,7 +29,9 @@ pub fn delegate_to(ctx: Context<DelegateTo>, params: DelegateToParams) -> Result
         ctx.remaining_accounts,
         ctx.bumps.config,
         message,
-        params.opts.clone()
+        params.opts.clone(),
+        ctx.accounts.config.eid,
+        ctx.accounts.config.receiver
     )?;
 
     Ok(())
