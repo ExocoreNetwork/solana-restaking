@@ -123,65 +123,65 @@ describe("solana-restaking", () => {
     // await airdrop(conn, dev.publicKey);
     // await airdrop(conn, delegate.publicKey);
 
-    const init_tx = await lst_program.methods
-      .initConfig({
-        dstEid: remoteEid,
-        receiver: remoteOapp,
-      })
-      .accounts({
-        owner: owner.publicKey,
-        config,
-        messages,
-        lzReceiveTypes,
-        tokens,
-        operator: delegate.publicKey,
-        delegate: delegate.publicKey,
-        endpointProgram: ENDPOINT_PROGRAM_ID,
-      })
-      .remainingAccounts([
-        {
-          isSigner: false,
-          isWritable: false,
-          pubkey: ENDPOINT_PROGRAM_ID,
-        },
-        {
-          isSigner: true,
-          isWritable: true,
-          pubkey: owner.publicKey,
-        },
-        {
-          isSigner: false,
-          isWritable: false,
-          pubkey: config,
-        },
-        {
-          isSigner: false,
-          isWritable: true,
-          pubkey: oappRegistry,
-        },
-        {
-          isSigner: false,
-          isWritable: false,
-          pubkey: SYSTEM_PROGRAM_ID,
-        },
-        {
-          isSigner: false,
-          isWritable: false,
-          pubkey: ENDPOINT_EVENT_AUTHORITY,
-        },
-        {
-          isSigner: false,
-          isWritable: false,
-          pubkey: ENDPOINT_PROGRAM_ID,
-        },
-      ])
-      .signers([owner])
-      .rpc()
-      .catch((e) => {
-        console.log(e);
-      });
-
-    console.log("Your transaction signature", init_tx);
+    // const init_tx = await lst_program.methods
+    //   .initConfig({
+    //     dstEid: remoteEid,
+    //     receiver: remoteOapp,
+    //   })
+    //   .accounts({
+    //     owner: owner.publicKey,
+    //     config,
+    //     messages,
+    //     lzReceiveTypes,
+    //     tokens,
+    //     operator: delegate.publicKey,
+    //     delegate: delegate.publicKey,
+    //     endpointProgram: ENDPOINT_PROGRAM_ID,
+    //   })
+    //   .remainingAccounts([
+    //     {
+    //       isSigner: false,
+    //       isWritable: false,
+    //       pubkey: ENDPOINT_PROGRAM_ID,
+    //     },
+    //     {
+    //       isSigner: true,
+    //       isWritable: true,
+    //       pubkey: owner.publicKey,
+    //     },
+    //     {
+    //       isSigner: false,
+    //       isWritable: false,
+    //       pubkey: config,
+    //     },
+    //     {
+    //       isSigner: false,
+    //       isWritable: true,
+    //       pubkey: oappRegistry,
+    //     },
+    //     {
+    //       isSigner: false,
+    //       isWritable: false,
+    //       pubkey: SYSTEM_PROGRAM_ID,
+    //     },
+    //     {
+    //       isSigner: false,
+    //       isWritable: false,
+    //       pubkey: ENDPOINT_EVENT_AUTHORITY,
+    //     },
+    //     {
+    //       isSigner: false,
+    //       isWritable: false,
+    //       pubkey: ENDPOINT_PROGRAM_ID,
+    //     },
+    //   ])
+    //   .signers([owner])
+    //   .rpc()
+    //   .catch((e) => {
+    //     console.log(e);
+    //   });
+    //
+    // console.log("Your transaction signature", init_tx);
 
     // let tx = new web3.Transaction();
     // // init nonce ok

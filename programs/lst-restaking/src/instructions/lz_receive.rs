@@ -16,7 +16,7 @@ pub fn lz_receive(ctx: Context<LzReceive>, params: LzReceiveParams) -> Result<()
     msg!("message: {:?}", params.message);
     msg!("extra_data: {:?}", params.extra_data);
 
-    let mut start_accounts_clear = 2;
+    let mut start_accounts_clear = 1;
 
     let action = u8::try_from_slice(&params.message[..1])?;
     // match action {
@@ -94,8 +94,6 @@ pub fn lz_receive(ctx: Context<LzReceive>, params: LzReceiveParams) -> Result<()
 
 #[derive(Accounts)]
 pub struct LzReceive<'info> {
-    #[account(mut)]
-    payer: Signer<'info>,
     #[account(mut,
     seeds = [Config::CONFIG_SEED_PREFIX],
     bump = config.bump

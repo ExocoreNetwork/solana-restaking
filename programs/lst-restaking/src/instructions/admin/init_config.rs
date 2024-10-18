@@ -63,7 +63,7 @@ impl InitConfig<'_> {
         msg!("receiver: {:?}", config.receiver);
 
         ctx.accounts.lz_receive_types.config = config.key();
-        ctx.accounts.lz_receive_types.messages = ctx.accounts.messages.key();
+        // ctx.accounts.lz_receive_types.messages = ctx.accounts.messages.key();
 
         let signer = &[Config::CONFIG_SEED_PREFIX, &[ctx.bumps.config][..]];
 

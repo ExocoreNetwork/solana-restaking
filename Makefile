@@ -17,7 +17,7 @@ export DVN_CONFIG = "4VDjp6XQaxoZf5RGwiPU9NR1EXSZn2TP4ATMmiSzLfhb"
 export DEFAULT_SEND_LIBRARY_CONFIG = "gU5rYi3eVPqFJzUgths7ZHxmbfQh2j3KQX3Mg7vR6sr"
 export DEFAULT_SEND_CONFIG = "5ro8ELnyfCmD8UnBgJ1yuZ3qgQ16WzaxTqgZDBRJmFBb"
 
-export LST_RESTAKING_PROGRAM_ID = "4zfL13ounan3Uaa5TiUDphxTnYVvaVDLTPNvkRgpbdSM"
+export LST_RESTAKING_PROGRAM_ID = "8wxx5TNHuEGbeAC9RuS9ht8QKS77NdfsVCZDtj5h1xur"
 export LST_RESTAKING_PROGRAM_PATH = "target/deploy/lst_restaking.so"
 export LST_RESTAKING_BUFFER = "AeXwfLVnMCERxYD6YhTg6tywEBfK4QovKV2QLXW3M327"
 
@@ -91,7 +91,7 @@ build0: setup
 
 deploy-lst:
 	anchor deploy --program-name lst-restaking  # --provider.wallet .keys/dev.json --provider.cluster "https://solana-devnet.g.alchemy.com/v2/aX4Snr1_FQhgbX_QtH-PapYe1_VRTfQZ"
-# solana program deploy --program-id target/deploy/lst_restaking-keypair.json --buffer GoQ82xWX3Tqmkj4LN9jJoD8JJPnmuukgzi7jU2ToDNvB --upgrade-authority .keys/dev.json target/deploy/lst_restaking.so
+# solana program deploy --program-id target/deploy/lst_restaking-keypair.json --buffer 5bRv4dTbCQo6po47fr98UG7KgeajQ6ZSZEjCRyivYmj4 --upgrade-authority .keys/dev.json target/deploy/lst_restaking.so
 
 upgrade-lst:
 	anchor upgrade --program-id ${LST_RESTAKING_PROGRAM_ID} ${LST_RESTAKING_PROGRAM_PATH} --provider.wallet .keys/dev.json

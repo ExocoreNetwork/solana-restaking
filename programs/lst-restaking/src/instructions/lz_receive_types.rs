@@ -25,7 +25,7 @@ pub fn lz_receive_types(ctx: Context<LzReceiveTypes>, params: LzReceiveParams) -
     msg!("extra_data: {:?}", params.extra_data);
 
     let mut accounts = vec![
-        LzAccount { pubkey: Pubkey::default(), is_signer: true, is_writable: true },
+        // LzAccount { pubkey: Pubkey::default(), is_signer: true, is_writable: true },
         // config
         LzAccount { pubkey: get_pda(&[Config::CONFIG_SEED_PREFIX]), is_signer: false, is_writable: true},
     ];
@@ -105,15 +105,14 @@ pub fn lz_receive_types(ctx: Context<LzReceiveTypes>, params: LzReceiveParams) -
 #[derive(Accounts)]
 pub struct LzReceiveTypes<'info> {
    #[account(
-        mut,
         seeds = [Config::CONFIG_SEED_PREFIX],
         bump = config.bump
    )]
     config: Box<Account<'info, Config>>,
-    #[account(
-        address = config.messages
-    )]
-    messages: Box<Account<'info, Messages>>,
+    // #[account(
+    //     address = config.messages
+    // )]
+    // messages: Box<Account<'info, Messages>>,
     // #[account(
     //     address = config.tokens
     // )]

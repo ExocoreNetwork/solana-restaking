@@ -12,7 +12,7 @@ use states::*;
 
 
 
-declare_id!("4zfL13ounan3Uaa5TiUDphxTnYVvaVDLTPNvkRgpbdSM");
+declare_id!("DMKWjKA56Wk3stpGjkMJ6YYDS58TvowZEShdg3AYiH17");
 #[program]
 pub mod lst_restaking {
     use super::*;

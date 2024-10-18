@@ -5,7 +5,7 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-lst-restaking = "4zfL13ounan3Uaa5TiUDphxTnYVvaVDLTPNvkRgpbdSM"
+lst-restaking = "DMKWjKA56Wk3stpGjkMJ6YYDS58TvowZEShdg3AYiH17"
 native-restaking = "AtfUbXniQddbR3DVetG2xJz7Hnyg8geNECRrDdnLsYZ5"
 
 [registry]
@@ -13,8 +13,8 @@ url = "https://api.apr.dev"
 
 [provider]
 # cluster = "Localnet"
-cluster = "Devnet"
-# cluster = "https://solana-devnet.g.alchemy.com/v2/aX4Snr1_FQhgbX_QtH-PapYe1_VRTfQZ"
+# cluster = "Devnet"
+cluster = "https://solana-devnet.g.alchemy.com/v2/aX4Snr1_FQhgbX_QtH-PapYe1_VRTfQZ"
 wallet = ".keys/dev.json"
 
 [scripts]

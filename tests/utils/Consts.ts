@@ -2,7 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 import { evmAddressToPaddedArray, readKeypairToFile } from "./Helper";
 
 export const LST_RESTAKING_PROGRAM_ID = new PublicKey(
-  "4zfL13ounan3Uaa5TiUDphxTnYVvaVDLTPNvkRgpbdSM"
+  "DMKWjKA56Wk3stpGjkMJ6YYDS58TvowZEShdg3AYiH17"
 );
 
 export const ENDPOINT_PROGRAM_ID = new PublicKey(
@@ -29,10 +29,11 @@ export const SYSTEM_PROGRAM_ID = new PublicKey(
 );
 
 export const remoteOapp = evmAddressToPaddedArray(
-  "0xEAf4E4D09b9CeB936492518A852026c914beb11E"
+    "0x8Db51d2E55453935b790e23529de314143D2160a"
+  // "0xEAf4E4D09b9CeB936492518A852026c914beb11E"
 );
 
-export const remotePeer = "0xEAf4E4D09b9CeB936492518A852026c914beb11E";
+export const remotePeer = "0x8Db51d2E55453935b790e23529de314143D2160a";
 export const remoteEid = 40259;
 
 export const SEND_LIBRARY_INFO = new PublicKey(
