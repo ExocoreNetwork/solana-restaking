@@ -21,6 +21,7 @@ wallet = ".keys/dev.json"
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
 
 initialize = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/Initialize.test.ts"
+initializeLz = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/InitializeLzAccounts.test.ts"
 
 addToken = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/AddWhiteList.test.ts"
 addTokenAgain = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/AddWhiteListFailure.test.ts"
@@ -39,3 +40,5 @@ withdrawPrincipal = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/Wi
 withdrawReward = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/WithdrawRewardFromExocore.test.ts"
 delegateTo = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/DelegateTo.test.ts"
 depositThenDelegateTo = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/DepositThenDelegateTo.test.ts"
+
+view = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/ViewTokens.test.ts"

@@ -1,23 +1,18 @@
+use std::mem;
 use crate::errors::LstRestakingError;
-use crate::states::{Config, MessageWithoutOperator, RequestAction, Tokens, Vault};
+use crate::states::{Config, MessageWithoutOperator, RequestAction, Token, Vault};
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
 };
 use oapp::endpoint::program::Endpoint;
-use crate::utils::{encode, send};
+use crate::utils::{send};
+use crate::{VAULT_SEEDS_PREFIX, TOKEN_SEEDS_PREFIX, CONFIG_SEEDS_PREFIX};
 
 pub fn deposit(ctx: Context<Deposit>, params: DepositParams) -> Result<()> {
-    // validate mint
-    // let config = &ctx.accounts.config;
-    let mint = &ctx.accounts.mint.key();
+    let token = &mut ctx.accounts.token;
 
-    let token_white_list = &ctx.accounts.tokens;
-
-    require!(
-        token_white_list.validate_mint(mint)?,
-        LstRestakingError::NotSupportMint
-    );
+    token.increase_consumed_tvl(params.amount_in as u128);
 
     // transfer
     transfer_checked(
@@ -38,14 +33,16 @@ pub fn deposit(ctx: Context<Deposit>, params: DepositParams) -> Result<()> {
     let vault = &mut ctx.accounts.vault;
     vault.deposit_balance += params.amount_in;
 
-    let message = encode(RequestAction::DepositLst(
+    let action = RequestAction::DepositLst(
         MessageWithoutOperator {
             mint: ctx.accounts.mint.key(),
             sender: ctx.accounts.depositor.key(),
             amount: params.amount_in
         }
-    ))?;
+    );
 
+    let mut message = Vec::with_capacity(1 + mem::size_of::<MessageWithoutOperator>());
+    action.encode(&mut message)?;
 
     msg!("message: {:?}", message);
 
@@ -70,7 +67,7 @@ pub struct Deposit<'info> {
     #[account(
         init_if_needed,
         payer = depositor,
-        seeds = [Vault::SEED_PREFIX, mint.key().as_ref(), depositor.key().as_ref()],
+        seeds = [VAULT_SEEDS_PREFIX, mint.key().as_ref(), depositor.key().as_ref()],
         bump,
         space = 8 + Vault::INIT_SPACE
     )]
@@ -79,9 +76,8 @@ pub struct Deposit<'info> {
     mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(
         mut,
-        seeds = [Config::CONFIG_SEED_PREFIX],
+        seeds = [CONFIG_SEEDS_PREFIX],
         bump,
-        has_one = tokens @ LstRestakingError::InvalidTokens
     )]
     config: Box<Account<'info, Config>>,
     #[account(
@@ -96,8 +92,12 @@ pub struct Deposit<'info> {
         token::authority = config
     )]
     pool_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
-    #[account(mut)]
-    tokens: Box<Account<'info, Tokens>>,
+    #[account(
+        mut,
+        seeds = [TOKEN_SEEDS_PREFIX, mint.key().as_ref()],
+        bump
+    )]
+    token: Box<Account<'info, Token>>,
     token_program: Interface<'info, TokenInterface>,
     endpoint_program: Program<'info, Endpoint>,
     system_program: Program<'info, System>,

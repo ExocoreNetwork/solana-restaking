@@ -5,7 +5,7 @@ import {LstRestaking} from "../../target/types/lst_restaking";
 import {
     airdrop,
     ENDPOINT_PROGRAM_ID,
-    getConfig, getMessages,
+    getConfig, getMessage,
     getPDATokenAccount,
     getVault,
     sendRemainingAccounts,
@@ -46,7 +46,7 @@ describe("solana-restaking", () => {
 
         const [vault] = await getVault(mint, user.publicKey);
 
-        const [messageList] = await getMessages(config);
+        const [messageList] = await getMessage(config);
 
         const poolTokenAccount = await getPDATokenAccount(mint, config);
 

@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { LstRestaking } from "../../../target/types/lst_restaking";
-import {getConfig, testKeys, createTestMint, getTokenAccount, getPDATokenAccount, getTokens} from "../../utils";
+import {getConfig, testKeys, createTestMint, getTokenAccount, getPDATokenAccount, getToken} from "../../utils";
 import {assert} from "chai";
 import * as fs from "node:fs";
 import {TOKEN_PROGRAM_ID} from "@coral-xyz/anchor/dist/cjs/utils/token";
@@ -29,7 +29,7 @@ describe("solana-restaking", () => {
   it("Add token into white list!", async () => {
       const [owner] = await testKeys();
       const [config] = await getConfig();
-      const [tokenWhiteList] = await getTokens();
+      const [tokenWhiteList] = await getToken();
 
       const conn = anchor.getProvider().connection as unknown as Connection;
 

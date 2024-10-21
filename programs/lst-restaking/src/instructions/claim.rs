@@ -1,15 +1,14 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface, transfer_checked, TransferChecked};
 use crate::errors::LstRestakingError;
-use crate::states::{Config, Vault, Messages, Tokens};
+use crate::states::{Config, Message, Token, Vault};
+use crate::{CONFIG_SEEDS_PREFIX, TOKEN_SEEDS_PREFIX, MESSAGE_SEEDS_PREFIX,};
 
+// TODO:
 pub fn claim(ctx: Context<Claim>, amount_in: u64) -> Result<()> {
     // validate mint
-    let token_white_list= &mut ctx.accounts.tokens;
     let mint = &ctx.accounts.mint.key();
     let claimer= &ctx.accounts.claimer.key();
-
-    require!(token_white_list.validate_mint(mint)?, LstRestakingError::NotSupportMint);
 
     let signer = &[Vault::SEED_PREFIX, mint.as_ref(), claimer.as_ref(), &[ctx.bumps.vault]];
 
@@ -50,18 +49,16 @@ pub struct Claim<'info> {
     vault: Account<'info, Vault>,
     #[account(
         mut,
-        seeds = [Messages::MESSAGE_SEED_PREFIX, config.key().as_ref()] ,
+        seeds = [MESSAGE_SEEDS_PREFIX, config.key().as_ref()] ,
         bump
     )]
-    message: Account<'info, Messages>,
+    message: Box<Account<'info, Message>>,
     #[account(mut)]
     mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(
         mut,
-        seeds = [Config::CONFIG_SEED_PREFIX],
+        seeds = [CONFIG_SEEDS_PREFIX],
         bump,
-        has_one = tokens @ LstRestakingError::InvalidTokens
-
     )]
     config: Account<'info, Config>,
     #[account(
@@ -76,8 +73,7 @@ pub struct Claim<'info> {
         token::authority = config
     )]
     pool_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
-    tokens: Box<Account<'info, Tokens>>,
-
+    token: Box<Account<'info, Token>>,
     token_program: Interface<'info, TokenInterface>,
     system_program: Program<'info, System>,
 }

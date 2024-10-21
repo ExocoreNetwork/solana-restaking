@@ -1,27 +1,27 @@
+use std::mem;
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::Mint;
 use oapp::endpoint::program::Endpoint;
-use crate::states::{Config, MessageWithOperator, RequestAction, Tokens, Vault};
-use crate::utils::{encode, send};
+use crate::states::{Config, MessageWithOperator, RequestAction, Token, Vault};
+use crate::utils::{send};
+use crate::{VAULT_SEEDS_PREFIX, TOKEN_SEEDS_PREFIX, CONFIG_SEEDS_PREFIX};
+
 use crate::errors::LstRestakingError;
 
 pub fn delegate_to(ctx: Context<DelegateTo>, params: DelegateToParams) -> Result<()> {
-    let token_white_list = &ctx.accounts.tokens;
-    let mint = &ctx.accounts.mint.key();
-
-    require!(
-        token_white_list.validate_mint(mint)?,
-        LstRestakingError::NotSupportMint
-    );
-
-    let message = encode(RequestAction::DelegateTo(
+    let action = RequestAction::DelegateTo(
         MessageWithOperator {
             mint: ctx.accounts.mint.key(),
             sender: ctx.accounts.depositor.key(),
             operator: params.operator,
             amount: params.amount
         }
-    ))?;
+    );
+
+    let mut message = Vec::with_capacity(1 + mem::size_of::<MessageWithOperator>());
+    action.encode(&mut message)?;
+
+    msg!("message: {:?}", message);
 
     let _ = send(
         ctx.accounts.endpoint_program.key(),
@@ -54,10 +54,14 @@ pub struct DelegateTo<'info> {
         mut,
         seeds = [Config::CONFIG_SEED_PREFIX],
         bump,
-        has_one = tokens @ LstRestakingError::InvalidTokens
     )]
     config: Account<'info, Config>,
-    tokens: Box<Account<'info, Tokens>>,
+    #[account(
+        mut,
+        seeds = [TOKEN_SEEDS_PREFIX, mint.key().as_ref()],
+        bump
+    )]
+    token: Box<Account<'info, Token>>,
     endpoint_program: Program<'info, Endpoint>,
 }
 

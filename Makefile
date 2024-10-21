@@ -106,6 +106,12 @@ build:
 initialize:
 	anchor run initialize
 
+initializeLz:
+	anchor run initializeLz
+
+view:
+	anchor run view
+
 addToken:
 	anchor run addToken
 

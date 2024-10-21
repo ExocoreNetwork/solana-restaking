@@ -10,9 +10,13 @@ use oapp::LzReceiveParams;
 use instructions::*;
 use states::*;
 
-
-
 declare_id!("DMKWjKA56Wk3stpGjkMJ6YYDS58TvowZEShdg3AYiH17");
+
+pub const TOKEN_SEEDS_PREFIX: &[u8] = b"token";
+pub const MESSAGE_SEEDS_PREFIX: &[u8] = b"message";
+pub const CONFIG_SEEDS_PREFIX: &[u8] = b"config";
+pub const VAULT_SEEDS_PREFIX: &[u8] = b"valut";
+
 #[program]
 pub mod lst_restaking {
     use super::*;

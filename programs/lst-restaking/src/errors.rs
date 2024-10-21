@@ -19,6 +19,9 @@ pub enum LstRestakingError {
     #[msg("Invalid message list account")]
     InvalidMessageList,
     #[msg("Invalid tokens account")]
-    InvalidTokens
-
+    InvalidTokens,
+    #[msg("Account data too small")]
+    AccountDataTooSmall,
+    #[msg("No need processed action")]
+    NoNeedProcessedAction
 }

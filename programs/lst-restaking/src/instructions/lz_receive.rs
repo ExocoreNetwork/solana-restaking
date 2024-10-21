@@ -3,11 +3,10 @@ use oapp::endpoint::ConstructCPIContext;
 use oapp::endpoint::cpi::accounts::Clear;
 use oapp::endpoint::instructions::ClearParams;
 use oapp::LzReceiveParams;
-// use crate::cpi::add_token ;
-use crate::instructions::{AddTokenParams, AddToken};
 
-use crate::states::{Action, Config, Messages, RequestAction, Tokens};
+use crate::states::{Config, RequestAction, Token};
 use crate::lst_restaking::add_token;
+use crate::utils::{create_pda, get_token_seeds};
 
 pub fn lz_receive(ctx: Context<LzReceive>, params: LzReceiveParams) -> Result<()> {
 
@@ -25,15 +24,29 @@ pub fn lz_receive(ctx: Context<LzReceive>, params: LzReceiveParams) -> Result<()
         9 => {
             msg!("the action of message is 9");
 
-            start_accounts_clear = 2;
+            // start_accounts_clear = 1;
 
             let mint = Pubkey::try_from_slice(&params.message[1..33])?;
             let tvl_limit = u128::try_from_slice(&params.message[33..49])?;
 
+            msg!("mint: {}", mint);
+            msg!("tvl_limit: {}", tvl_limit);
+
+            let token = &ctx.accounts.unchecked_account;
+
+            msg!("token: {}", token.key);
+
+            let seeds = get_token_seeds(&mint);
+            let space = 8 + Token::INIT_SPACE;
+
+            create_pda(&token.to_account_info(), &ctx.accounts.payer.to_account_info(), &ctx.program_id, &seeds, space)?;
+
+            Token::write(&token.to_account_info(), &mint, tvl_limit)?;
+
             // let tokens = &mut Account::<Tokens>::try_from(&tokens)?;
             // tokens.update_token_info(mint, tvl_limit, Action::Add)?;
 
-            ctx.accounts.tokens.update_token_info(mint, tvl_limit, Action::Add)?;
+            // ctx.accounts.tokens.update_token_info(mint, tvl_limit, Action::Add)?;
 
         }
         12 => {
@@ -120,11 +133,19 @@ pub fn lz_receive(ctx: Context<LzReceive>, params: LzReceiveParams) -> Result<()
 
 #[derive(Accounts)]
 pub struct LzReceive<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
     #[account(mut,
     seeds = [Config::CONFIG_SEED_PREFIX],
     bump = config.bump
     )]
     pub config: Account<'info, Config>,
 
-    pub tokens: Account<'info, Tokens>,
+    /// CHECK: generated PDA
+    #[account(mut)]
+    pub unchecked_account: UncheckedAccount<'info>,
+
+    pub system_program: Program<'info, System>,
+
+    // pub token: Account<'info, Tokens>,
 }

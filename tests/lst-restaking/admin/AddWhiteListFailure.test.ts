@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import {Program, web3} from "@coral-xyz/anchor";
 import { LstRestaking } from "../../../target/types/lst_restaking";
-import {getConfig, getPDATokenAccount, getTokenAccount, getTokens, testKeys} from "../../utils";
+import {getConfig, getPDATokenAccount, getTokenAccount, getToken, testKeys} from "../../utils";
 import {expect} from "chai";
 import {config} from "dotenv";
 import {TOKEN_PROGRAM_ID} from "@coral-xyz/anchor/dist/cjs/utils/token";
@@ -29,7 +29,7 @@ describe("solana-restaking", () => {
     it("Add token which is already exists in white list!", async () => {
         const [owner] = await testKeys();
         const [config] = await getConfig();
-        const [tokenWhiteList] = await getTokens();
+        const [tokenWhiteList] = await getToken();
 
 
         const mint = new web3.PublicKey(process.env.MINT_ADDRESS);

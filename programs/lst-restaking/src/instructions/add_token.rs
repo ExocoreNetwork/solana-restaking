@@ -1,12 +1,11 @@
 use anchor_lang::prelude::*;
-use crate::states::{Action, Tokens};
+use crate::states::Token;
 
 pub fn add_token(ctx: Context<AddToken>, params: AddTokenParams) -> Result<()> {
-    // require_keys_eq!(*ctx.program_id, ctx.accounts.caller.key());
+    // TODO: cpi call
 
-    let tokens= &mut ctx.accounts.tokens;
+    let token= &mut ctx.accounts.token;
 
-    tokens.update_token_info(params.mint, params.tvl_limit, Action::Add)?;
 
     Ok(())
 }
@@ -20,7 +19,7 @@ pub struct AddToken<'info> {
         // realloc = ,
         // realloc::payer
     )]
-    pub tokens: Account<'info, Tokens>,
+    pub token: Account<'info, Token>,
 
     pub system_account: Program<'info, System>,
 }

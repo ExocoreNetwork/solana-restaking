@@ -2,7 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 import { evmAddressToPaddedArray, readKeypairToFile } from "./Helper";
 
 export const LST_RESTAKING_PROGRAM_ID = new PublicKey(
-  "DMKWjKA56Wk3stpGjkMJ6YYDS58TvowZEShdg3AYiH17"
+  "6vVgcifjjPd9m5NHrLUNrdyAseHxu5ZG7NszZCPai1wn"
 );
 
 export const ENDPOINT_PROGRAM_ID = new PublicKey(

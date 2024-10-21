@@ -1218,6 +1218,7 @@ dependencies = [
  "anchor-spl",
  "num_enum 0.7.0",
  "oapp",
+ "rand 0.8.5",
  "solana-program",
  "spl-memo",
 ]

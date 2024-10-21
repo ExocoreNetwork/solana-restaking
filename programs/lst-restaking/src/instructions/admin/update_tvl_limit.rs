@@ -1,20 +1,16 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint};
 
-use crate::states::{Action, Tokens};
 use crate::{errors::LstRestakingError, states::Config};
-// use crate::utils::create_token_account;
+use crate::states::Token;
+use crate::{CONFIG_SEEDS_PREFIX, TOKEN_SEEDS_PREFIX};
 
 pub fn update_tvl_limit(ctx: Context<UpdateTvlLimit>, params: UpdateTvlLimitParams) -> Result<()> {
-    let tokens = &mut ctx.accounts.tokens;
+    let token = &mut ctx.accounts.token;
 
-    let mint = ctx.accounts.mint.key();
+    token.update_tvl_limit(params.tvl_limit);
 
-    tokens.validate_mint(&mint)?;
-
-    tokens.update_token_info(mint, params.tvl_limit, Action::ResetTvlLimit)?;
-
-    msg!("Successful to update token: {}, tvl_limit: {}", mint, params.tvl_limit);
+    msg!("Successful to update token: {}, tvl_limit: {}", token.mint, params.tvl_limit);
     Ok(())
 }
 
@@ -24,17 +20,18 @@ pub struct UpdateTvlLimit<'info> {
     operator: Signer<'info>,
     #[account(
         mut,
-        seeds = [Config::CONFIG_SEED_PREFIX],
+        seeds = [CONFIG_SEEDS_PREFIX],
         bump,
-        has_one = tokens @ LstRestakingError::InvalidTokens,
         has_one = operator @ LstRestakingError::InvalidOperator
     )]
     config: Account<'info, Config>,
     mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(
         mut,
+        seeds = [TOKEN_SEEDS_PREFIX, mint.key().as_ref()],
+        bump
     )]
-    tokens: Box<Account<'info, Tokens>>,
+    token: Box<Account<'info, Token>>,
 }
 
 #[derive(Clone, AnchorSerialize, AnchorDeserialize)]

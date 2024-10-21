@@ -1,21 +1,19 @@
+use std::mem;
 use crate::errors::LstRestakingError;
-use crate::states::{Config, MessageWithOperator, RequestAction, Tokens, Vault};
+use crate::states::{Config, MessageWithOperator, MessageWithoutOperator, RequestAction, Token, Vault};
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
 };
 use oapp::endpoint::program::Endpoint;
-use crate::utils::{encode, send};
+use crate::utils::{send};
+use crate::{VAULT_SEEDS_PREFIX, TOKEN_SEEDS_PREFIX, CONFIG_SEEDS_PREFIX};
+
 
 pub fn deposit_then_delegate_to(ctx: Context<DepositThenDelegateTo>, params: DepositThenDelegateToParams) -> Result<()> {
-    // validate mint
-    let token_white_list = &mut ctx.accounts.tokens;
-    let mint = &ctx.accounts.mint.key();
+    let token = &mut ctx.accounts.token;
 
-    require!(
-        token_white_list.validate_mint(mint)?,
-        LstRestakingError::NotSupportMint
-    );
+    token.increase_consumed_tvl(params.amount_in as u128);
 
     // transfer
     transfer_checked(
@@ -36,14 +34,19 @@ pub fn deposit_then_delegate_to(ctx: Context<DepositThenDelegateTo>, params: Dep
     let vault = &mut ctx.accounts.vault;
     vault.deposit_balance += params.amount_in;
 
-    let message = encode(RequestAction::DepositThenDelegateTo(
+    let action = RequestAction::DepositThenDelegateTo(
         MessageWithOperator {
             mint: ctx.accounts.mint.key(),
             sender: ctx.accounts.depositor.key(),
             operator: params.operator,
             amount: params.amount_in
         }
-    ))?;
+    );
+
+    let mut message = Vec::with_capacity(1 + mem::size_of::<MessageWithOperator>());
+    action.encode(&mut message)?;
+
+    msg!("message: {:?}", message);
 
     let _ = send(
         ctx.accounts.endpoint_program.key(),
@@ -75,7 +78,6 @@ pub struct DepositThenDelegateTo<'info> {
         mut,
         seeds = [Config::CONFIG_SEED_PREFIX],
         bump,
-        has_one = tokens @ LstRestakingError::InvalidTokens
     )]
     config: Account<'info, Config>,
     #[account(
@@ -90,7 +92,7 @@ pub struct DepositThenDelegateTo<'info> {
         token::authority = config
     )]
     pool_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
-    tokens: Box<Account<'info, Tokens>>,
+    token: Box<Account<'info, Token>>,
     token_program: Interface<'info, TokenInterface>,
     endpoint_program: Program<'info, Endpoint>,
     system_program: Program<'info, System>,

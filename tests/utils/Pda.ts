@@ -19,12 +19,12 @@ const LST_RESTAKING_VAULT_PREFIX = Buffer.from(
   anchor.utils.bytes.utf8.encode("vault")
 );
 
-const LST_RESTAKING_MESSAGE_LIST_PREFIX = Buffer.from(
-    anchor.utils.bytes.utf8.encode("message-list")
+const LST_RESTAKING_MESSAGE_PREFIX = Buffer.from(
+    anchor.utils.bytes.utf8.encode("message")
 );
 
-const LST_RESTAKING_TOKEN_WHITE_LIST= Buffer.from(
-    anchor.utils.bytes.utf8.encode("tokenWhiteList")
+const LST_RESTAKING_TOKEN_PREFIX= Buffer.from(
+    anchor.utils.bytes.utf8.encode("token")
 );
 
 const OAPP_SEEDS= Buffer.from(
@@ -79,9 +79,9 @@ export async function getConfig(): Promise<[PublicKey, number]> {
   return [address, bump];
 }
 
-export async function getMessages(config: PublicKey): Promise<[PublicKey, number]> {
+export async function getMessage(nonce: number): Promise<[PublicKey, number]> {
     const [address, bump] = PublicKey.findProgramAddressSync(
-        [LST_RESTAKING_MESSAGE_LIST_PREFIX, config.toBuffer()],
+        [LST_RESTAKING_MESSAGE_PREFIX, new BN(nonce).toBuffer('be', 8)],
         LST_RESTAKING_PROGRAM_ID
     );
 
@@ -111,13 +111,13 @@ export async function getOApp(): Promise<[PublicKey, number]> {
     return [address, bump]
 }
 
-export async function getTokens(): Promise<[PublicKey, number]> {
+export async function getToken(mint: PublicKey): Promise<[PublicKey, number]> {
     const [address, bump] = PublicKey.findProgramAddressSync(
-        [LST_RESTAKING_TOKEN_WHITE_LIST],
+        [LST_RESTAKING_TOKEN_PREFIX, mint.toBuffer()],
         LST_RESTAKING_PROGRAM_ID
     );
 
-    console.log(`TokenWhiteList: ${address}`);
+    console.log(`Token: ${address}`);
 
     return [address, bump]
 }

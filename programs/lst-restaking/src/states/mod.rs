@@ -1,9 +1,9 @@
 mod config;
-mod messages;
-mod tokens;
+mod message;
+mod token;
 mod vault;
 
 pub use config::*;
-pub use messages::*;
-pub use tokens::*;
+pub use message::*;
+pub use token::*;
 pub use vault::*;
