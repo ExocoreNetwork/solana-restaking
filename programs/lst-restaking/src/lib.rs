@@ -25,6 +25,10 @@ pub mod lst_restaking {
         SetRemote::apply(&mut ctx, &params)
     }
 
+    pub(crate) fn add_token(ctx: Context<AddToken>, params: AddTokenParams) -> Result<()> {
+        instructions::add_token(ctx, params)
+    }
+
     pub fn transfer_ownership(ctx: Context<TransferOwnership>) -> Result<()> {
         instructions::transfer_ownership(ctx)
     }

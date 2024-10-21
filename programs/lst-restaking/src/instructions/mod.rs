@@ -7,6 +7,7 @@ mod claim;
 mod delegate_to;
 mod lz_receive_types;
 mod lz_receive;
+mod add_token;
 
 pub use admin::*;
 pub use deposit::*;
@@ -17,4 +18,5 @@ pub use delegate_to::*;
 pub use claim::*;
 pub use lz_receive_types::*;
 pub use lz_receive::*;
+pub use add_token::*;
 

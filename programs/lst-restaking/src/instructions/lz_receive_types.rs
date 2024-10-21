@@ -1,12 +1,10 @@
 use anchor_lang::prelude::*;
-use anchor_spl::associated_token::get_associated_token_address;
-use anchor_spl::token::spl_token;
-use anchor_spl::token_2022::spl_token_2022;
 use oapp::endpoint_cpi::LzAccount;
 use crate::states::{Config, Messages, RequestAction, Vault};
 use crate::utils::{ get_pda};
 use oapp::LzReceiveParams;
 use solana_program::system_program;
+use crate::id;
 
 // payer
 // config
@@ -25,13 +23,33 @@ pub fn lz_receive_types(ctx: Context<LzReceiveTypes>, params: LzReceiveParams) -
     msg!("extra_data: {:?}", params.extra_data);
 
     let mut accounts = vec![
-        // LzAccount { pubkey: Pubkey::default(), is_signer: true, is_writable: true },
         // config
         LzAccount { pubkey: get_pda(&[Config::CONFIG_SEED_PREFIX]), is_signer: false, is_writable: true},
     ];
 
-    let messages_account_info = ctx.accounts.messages.to_account_info();
+    // let messages_account_info = ctx.accounts.messages.to_account_info();
     let action = u8::try_from_slice(&params.message[..1])?;
+
+    match action {
+        9 => {
+            msg!("the action of message is 9");
+            // let mint = Pubkey::try_from_slice(&params.message[1..33])?;
+            accounts.extend(
+                vec![
+                    LzAccount { pubkey: id(), is_signer: false, is_writable: false},
+                    LzAccount { pubkey: config.tokens, is_signer: false, is_writable: true},
+                    LzAccount { pubkey: system_program::id(), is_signer: false, is_writable: false},
+                ]
+            );
+        }
+        12 => {
+           msg!("the action of message is 12");
+        }
+        _ => {
+            msg!("the action of message is {}, we won't process this message now", action);
+        }
+    }
+
 
     // match action {
     //     12 => {

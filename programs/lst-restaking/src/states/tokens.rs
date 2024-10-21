@@ -6,7 +6,7 @@ use std::mem::size_of;
 #[derive(InitSpace)]
 pub struct Tokens {
     #[max_len(10)]
-    tokens: Vec<Token>,
+    pub tokens: Vec<Token>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, InitSpace)]
@@ -14,7 +14,7 @@ pub struct Token {
     mint: Pubkey,
     // program: Pubkey,
     tvl_limit: u128,
-    total_balances: u128
+    consumed_tvl: u128
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Copy, Clone, InitSpace)]
@@ -33,10 +33,10 @@ impl Tokens {
     pub fn update_token_info(&mut self, mint: Pubkey, tvl_limit: u128, action: Action) -> Result<()> {
         match action {
             Action::Add => {
-                if let Some(_) = self.tokens.iter_mut().find(|t| t.mint == mint) {
+                if self.tokens.iter().any(|t| t.mint == mint) {
                     return Err(LstRestakingError::MintAlreadyExists.into());
                 } else {
-                    self.tokens.push(Token { mint, tvl_limit, total_balances: 0 })
+                    self.tokens.push(Token { mint, tvl_limit, consumed_tvl: 0 })
                 }
             }
             Action::ResetTvlLimit => {

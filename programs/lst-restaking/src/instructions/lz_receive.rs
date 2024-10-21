@@ -1,11 +1,13 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token_2022::spl_token_2022;
 use oapp::endpoint::ConstructCPIContext;
 use oapp::endpoint::cpi::accounts::Clear;
 use oapp::endpoint::instructions::ClearParams;
 use oapp::LzReceiveParams;
+// use crate::cpi::add_token ;
+use crate::instructions::{AddTokenParams, AddToken};
 
 use crate::states::{Action, Config, Messages, RequestAction, Tokens};
+use crate::lst_restaking::add_token;
 
 pub fn lz_receive(ctx: Context<LzReceive>, params: LzReceiveParams) -> Result<()> {
 
@@ -16,9 +18,33 @@ pub fn lz_receive(ctx: Context<LzReceive>, params: LzReceiveParams) -> Result<()
     msg!("message: {:?}", params.message);
     msg!("extra_data: {:?}", params.extra_data);
 
-    let mut start_accounts_clear = 1;
+    let mut start_accounts_clear = 0;
 
     let action = u8::try_from_slice(&params.message[..1])?;
+    match action {
+        9 => {
+            msg!("the action of message is 9");
+
+            start_accounts_clear = 2;
+
+            let mint = Pubkey::try_from_slice(&params.message[1..33])?;
+            let tvl_limit = u128::try_from_slice(&params.message[33..49])?;
+
+            // let tokens = &mut Account::<Tokens>::try_from(&tokens)?;
+            // tokens.update_token_info(mint, tvl_limit, Action::Add)?;
+
+            ctx.accounts.tokens.update_token_info(mint, tvl_limit, Action::Add)?;
+
+        }
+        12 => {
+            msg!("the action of message is 9");
+
+        }
+        _ => {
+            msg!("the action of message is 9");
+
+        }
+    }
     // match action {
     //     12 => {
     //         let messages_account_info = &ctx.remaining_accounts[2];
@@ -98,5 +124,7 @@ pub struct LzReceive<'info> {
     seeds = [Config::CONFIG_SEED_PREFIX],
     bump = config.bump
     )]
-    config: Account<'info, Config>,
+    pub config: Account<'info, Config>,
+
+    pub tokens: Account<'info, Tokens>,
 }
