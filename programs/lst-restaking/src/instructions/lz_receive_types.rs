@@ -36,9 +36,9 @@ pub fn lz_receive_types(ctx: Context<LzReceiveTypes>, params: LzReceiveParams) -
             // let mint = Pubkey::try_from_slice(&params.message[1..33])?;
             accounts.extend(
                 vec![
-                    LzAccount { pubkey: id(), is_signer: false, is_writable: false},
                     LzAccount { pubkey: config.tokens, is_signer: false, is_writable: true},
-                    LzAccount { pubkey: system_program::id(), is_signer: false, is_writable: false},
+                    // LzAccount { pubkey: id(), is_signer: false, is_writable: false},
+                    // LzAccount { pubkey: system_program::id(), is_signer: false, is_writable: false},
                 ]
             );
         }
